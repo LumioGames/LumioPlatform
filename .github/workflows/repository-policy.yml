@@ -1,0 +1,38 @@
+name: Repository Policy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  spec:
+    name: Spec and README policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate LumioAgent specification
+        run: |
+          node .spec/tools/spec-lint.mjs
+          node --test .spec/tools/spec-lint.test.mjs
+      - name: Validate repository boundary documentation
+        run: |
+          test -s README.md
+          test -s README.en.md
+          test -s LICENSE
+          test -s .gitattributes
+          grep -q '^\*\.md text eol=lf$' .gitattributes
+          grep -q '^## 职责$' README.md
+          grep -q '^## 明确不负责什么$' README.md
+          grep -q '^## 收口门槛$' README.md
+          grep -q '^## Responsibilities$' README.en.md
+          test "$(readlink .claude/agents)" = "../.spec/agents"
+          test "$(readlink .claude/skills)" = "../.spec/skills"
+          test "$(readlink .agents/skills)" = "../.spec/skills"
+
+  # dotnet build/test（PostgreSQL service container）与 pnpm verify 两个 job 由 P0-1 骨架卡追加；
+  # 在那之前本仓只有文档与规范，没有可构建的代码。
