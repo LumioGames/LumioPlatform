@@ -5,6 +5,7 @@ import { FeedbackPage } from '../features/feedback/FeedbackPage';
 import { LobbyPage } from '../features/lobby/LobbyPage';
 import { LoginPage, RegisterPage } from '../features/auth/AuthPages';
 import { MePage } from '../features/me/MePage';
+import { GamePage, LaunchFailPage, LaunchingPage, RoadmapPage } from '../features/platform/PlatformPages';
 import styles from './app.module.css';
 
 function Brand() {
@@ -29,6 +30,8 @@ function Header() {
       <nav className={`ui-nav__links ${styles.navLinks}`} aria-label="主导航">
         <NavLink to="/" end>大厅</NavLink>
         <NavLink to="/feedback">反馈</NavLink>
+        <NavLink to="/roadmap">Roadmap</NavLink>
+        <a href="https://github.com/LumioGames" target="_blank" rel="noreferrer">开源引擎 ↗</a>
         {user?.role === 'admin' && <NavLink to="/admin">管理后台</NavLink>}
       </nav>
       <div className={styles.accountActions}>
@@ -94,6 +97,10 @@ export function AppRoutes() {
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
+        <Route path="roadmap" element={<RoadmapPage />} />
+        <Route path="launching/:slug" element={<LaunchingPage />} />
+        <Route path="launch-fail/:slug" element={<LaunchFailPage />} />
+        <Route path="games/:slug/*" element={<GamePage />} />
         <Route path="me" element={<MeGuard />} />
         <Route path="admin" element={<AdminGuard />}>
           <Route index element={<AdminPage />} />
