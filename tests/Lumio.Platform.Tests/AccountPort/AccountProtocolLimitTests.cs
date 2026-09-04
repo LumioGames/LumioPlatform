@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Lumio.Platform.Account;
+using Lumio.Platform.App;
 using Lumio.Platform.App.AccountPort;
 using Microsoft.AspNetCore.Http;
 using Xunit;
@@ -59,5 +61,43 @@ public sealed class AccountProtocolLimitTests
         Assert.Equal(2048, options.MaxSendQueueBytes);
         Assert.Equal(1, options.IdleTimeoutSeconds);
         Assert.Equal(1, options.SlowConsumerTimeoutSeconds);
+    }
+
+    [Fact]
+    public void login_rate_limiter_evicts_stale_keys_and_honors_memory_bound()
+    {
+        var limiter = new FixedWindowRateLimiter(new AccountRateLimitOptions
+        {
+            WindowSeconds = 60,
+            MaxRequestsPerIp = 30,
+            MaxRequestsPerLoginName = 30,
+            MaxRequestsPerAccount = 30,
+            MaxTrackedKeys = 3,
+        });
+
+        Assert.True(limiter.Allow("10.0.0.1", "alice", null, 1));
+        Assert.True(limiter.TrackedKeyCount <= 3);
+        Assert.True(limiter.Allow("10.0.0.2", "bob", null, 2));
+        Assert.True(limiter.TrackedKeyCount <= 3);
+        Assert.True(limiter.Allow("10.0.0.3", "carol", null, 62));
+        Assert.True(limiter.TrackedKeyCount <= 3);
+    }
+
+    [Fact]
+    public void required_key_parsing_rejects_missing_and_malformed_values()
+    {
+        Assert.Throws<InvalidDataException>(() => PlatformHost.ParseRequiredHexKey("TEST_KEY", null, Ed25519Keys.SeedLength, "test key"));
+        Assert.Throws<InvalidDataException>(() => PlatformHost.ParseRequiredHexKey("TEST_KEY", "00", Ed25519Keys.SeedLength, "test key"));
+        Assert.Throws<InvalidDataException>(() => PlatformHost.ParseRequiredHexKey("TEST_KEY", new string('z', 64), Ed25519Keys.SeedLength, "test key"));
+    }
+
+    [Fact]
+    public void required_key_parsing_accepts_exactly_sized_hex()
+    {
+        var expected = new byte[Ed25519Keys.SeedLength];
+        for (var i = 0; i < expected.Length; i++) expected[i] = (byte)i;
+        var actual = PlatformHost.ParseRequiredHexKey("TEST_KEY", Convert.ToHexString(expected), expected.Length, "test key");
+
+        Assert.Equal(expected, actual);
     }
 }

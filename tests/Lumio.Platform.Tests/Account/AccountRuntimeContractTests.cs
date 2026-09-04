@@ -151,6 +151,42 @@ public sealed class AccountRuntimeContractTests
     }
 
     [Fact]
+    public async Task verify_password_rechecks_durable_ban_before_success()
+    {
+        await using var fixture = await AccountRuntimeFixture.CreateAsync();
+        using var runtime = fixture.CreateRuntime("test");
+        var created = await runtime.LoginOrRegisterAsync("bannedverify", "123456", ip: "10.0.0.12");
+        Assert.True(created.Accepted, created.Detail);
+        await using (var db = fixture.CreateContext())
+        {
+            await db.Accounts.Where(value => value.LoginName == "bannedverify")
+                .ExecuteUpdateAsync(setters => setters.SetProperty(value => value.Status, "banned"));
+        }
+
+        var verified = await runtime.VerifyPasswordAsync("bannedverify", "123456", ip: "10.0.0.12");
+
+        Assert.Null(verified);
+    }
+
+    [Fact]
+    public async Task bot_credential_attempt_is_limited_before_verification()
+    {
+        await using var fixture = await AccountRuntimeFixture.CreateAsync();
+        using var runtime = fixture.CreateRuntime("test", new AccountRateLimitOptions
+        {
+            MaxRequestsPerIp = 1,
+            MaxRequestsPerLoginName = 30,
+            MaxRequestsPerAccount = 30,
+        });
+        var invalid = await runtime.LoginOrRegisterAsync("Bot77", "123456", "not-base64!", "10.0.0.13");
+        var validCredential = BotToolCredential.Issue(fixture.BotToolKeys.Seed, "launcher", fixture.Clock.UnixSeconds, fixture.Clock.UnixSeconds + 300);
+        var limited = await runtime.LoginOrRegisterAsync("Bot77", "123456", validCredential, "10.0.0.13");
+
+        Assert.Equal(AccountErrorCode.BotToolCredentialMalformed, invalid.Code);
+        Assert.Equal(AccountErrorCode.RateLimited, limited.Code);
+    }
+
+    [Fact]
     public async Task login_attempts_are_recorded()
     {
         await using var fixture = await AccountRuntimeFixture.CreateAsync();

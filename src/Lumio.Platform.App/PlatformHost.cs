@@ -77,7 +77,7 @@ public static class PlatformHost
         if (!string.IsNullOrWhiteSpace(selected.DatabaseConnectionString))
         {
             var protocolOptions = ReadProtocolOptions();
-            AccountProtocolServer.Map(app, app.Services.GetRequiredService<AccountRuntime>(), protocolOptions);
+            AccountProtocolServer.Map(app, () => app.Services.GetRequiredService<AccountRuntime>(), protocolOptions);
         }
 
         app.UseDefaultFiles();
@@ -113,24 +113,32 @@ public static class PlatformHost
         return app;
     }
 
-    private static byte[] ReadSeed(string name)
+    private static byte[] ReadSeed(string name) => ReadRequiredHexKey(name, Ed25519Keys.SeedLength, "admission private key");
+
+    private static byte[] ReadKey(string name) => ReadRequiredHexKey(name, Ed25519Keys.PublicKeyLength, "bot-tool public key");
+
+    private static byte[] ReadRequiredHexKey(string name, int expectedLength, string description)
     {
-        var value = Environment.GetEnvironmentVariable(name);
-        if (!string.IsNullOrWhiteSpace(value) && value.Length == 64)
-        {
-            try { var seed = Convert.FromHexString(value); if (seed.Length == 32) return seed; } catch (FormatException) { }
-        }
-        return Lumio.Platform.Account.Ed25519Keys.Generate().Seed;
+        return ParseRequiredHexKey(name, Environment.GetEnvironmentVariable(name), expectedLength, description);
     }
 
-    private static byte[] ReadKey(string name)
+    internal static byte[] ParseRequiredHexKey(string name, string? value, int expectedLength, string description)
     {
-        var value = Environment.GetEnvironmentVariable(name);
-        if (!string.IsNullOrWhiteSpace(value) && value.Length == 64)
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidDataException($"{name} is required ({description}).");
+        if (value.Length != expectedLength * 2)
+            throw new InvalidDataException($"{name} must be exactly {expectedLength * 2} hexadecimal characters ({description}).");
+        try
         {
-            try { var key = Convert.FromHexString(value); if (key.Length == 32) return key; } catch (FormatException) { }
+            var key = Convert.FromHexString(value);
+            if (key.Length != expectedLength)
+                throw new InvalidDataException($"{name} must decode to {expectedLength} bytes ({description}).");
+            return key;
         }
-        return Lumio.Platform.Account.Ed25519Keys.Generate().PublicKey;
+        catch (FormatException ex)
+        {
+            throw new InvalidDataException($"{name} must contain hexadecimal characters ({description}).", ex);
+        }
     }
 
     private static byte ReadByte(string name, byte fallback)

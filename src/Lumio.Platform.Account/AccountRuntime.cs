@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,15 +62,15 @@ public sealed class AccountRuntime : IDisposable
         if (request.Password.Length < AccountPort.PasswordMinLength || request.Password.Length > AccountPort.PasswordMaxLength)
             return await RejectAsync(loginName, AccountErrorCode.InvalidPassword, "password length out of range", request, cancellationToken).ConfigureAwait(false);
         var botName = LoginNameRules.IsBotNamespace(loginName);
-        if (botName && !string.IsNullOrEmpty(request.BotToolCredential)
-            && !BotToolCredential.TryVerify(request.BotToolCredential, options.BotToolPublicKey, options.Clock, out var botCode))
-            return await RejectAsync(loginName, botCode, "bot-tool credential rejected", request, cancellationToken).ConfigureAwait(false);
 
         // The world is an identity projection only; credentials always come from PostgreSQL.
         var record = await store.FindByLoginNameAsync(loginName, cancellationToken).ConfigureAwait(false);
         if (record is not null) Restore(record);
         if (!limiter.Allow(request.Ip, loginName, record?.AccountId, options.Clock.UnixSeconds))
             return await RejectAsync(loginName, AccountErrorCode.RateLimited, "rate limit exceeded", request, cancellationToken, record?.EntityId).ConfigureAwait(false);
+        if (botName && !string.IsNullOrEmpty(request.BotToolCredential)
+            && !BotToolCredential.TryVerify(request.BotToolCredential, options.BotToolPublicKey, options.Clock, out var botCode))
+            return await RejectAsync(loginName, botCode, "bot-tool credential rejected", request, cancellationToken, record?.EntityId).ConfigureAwait(false);
         if (botName && string.IsNullOrEmpty(request.BotToolCredential))
             return await RejectAsync(loginName, record is null ? AccountErrorCode.BotNamespaceRegisterForbidden : AccountErrorCode.BotNamespaceLoginForbidden, "bot namespace requires a valid bot-tool credential", request, cancellationToken, record?.EntityId).ConfigureAwait(false);
         if (record is not null)
@@ -78,8 +79,10 @@ public sealed class AccountRuntime : IDisposable
                 return await RejectAsync(loginName, AccountErrorCode.AccountBanned, "account is banned", request, cancellationToken, record.EntityId).ConfigureAwait(false);
             if (record.PasswordHash is null || !Argon2idPasswordHasher.Verify(record.PasswordHash, request.Password))
                 return await RejectAsync(loginName, AccountErrorCode.WrongPassword, "password does not match", request, cancellationToken, record.EntityId).ConfigureAwait(false);
-            await store.TouchLastLoginAsync(record.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false);
-            return await IssueAsync(record, false, request, cancellationToken).ConfigureAwait(false);
+            var active = await RefreshAndTouchActiveAsync(record, cancellationToken).ConfigureAwait(false);
+            if (active is null)
+                return await RejectAsync(loginName, AccountErrorCode.AccountBanned, "account is banned", request, cancellationToken, record.EntityId).ConfigureAwait(false);
+            return await IssueAsync(active, false, request, cancellationToken).ConfigureAwait(false);
         }
         if (string.Equals(options.RegistrationProfile, "production", StringComparison.Ordinal) && !botName)
             return await RejectAsync(loginName, AccountErrorCode.RegistrationRequiresPlatform, "ordinary registration must use platform email registration", request, cancellationToken).ConfigureAwait(false);
@@ -90,12 +93,20 @@ public sealed class AccountRuntime : IDisposable
         Restore(record);
         if (!created.NewlyCreated)
         {
+            if (!string.Equals(record.Status, "active", StringComparison.Ordinal))
+                return await RejectAsync(loginName, AccountErrorCode.AccountBanned, "account is banned", request, cancellationToken, record.EntityId).ConfigureAwait(false);
             if (record.PasswordHash is null || !Argon2idPasswordHasher.Verify(record.PasswordHash, request.Password))
                 return await RejectAsync(loginName, AccountErrorCode.WrongPassword, "password does not match", request, cancellationToken, record.EntityId).ConfigureAwait(false);
-            return await IssueAsync(record, false, request, cancellationToken).ConfigureAwait(false);
+            var active = await RefreshAndTouchActiveAsync(record, cancellationToken).ConfigureAwait(false);
+            if (active is null)
+                return await RejectAsync(loginName, AccountErrorCode.AccountBanned, "account is banned", request, cancellationToken, record.EntityId).ConfigureAwait(false);
+            return await IssueAsync(active, false, request, cancellationToken).ConfigureAwait(false);
         }
         options.Audit.Write("account_created", new Dictionary<string, string>(StringComparer.Ordinal) { ["accountId"] = record.AccountId, ["loginName"] = record.LoginName });
-        return await IssueAsync(record, true, request, cancellationToken).ConfigureAwait(false);
+        var newlyCreatedActive = await RefreshAndTouchActiveAsync(record, cancellationToken).ConfigureAwait(false);
+        if (newlyCreatedActive is null)
+            return await RejectAsync(loginName, AccountErrorCode.AccountBanned, "account is banned", request, cancellationToken, record.EntityId).ConfigureAwait(false);
+        return await IssueAsync(newlyCreatedActive, true, request, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<AccountRecord?> RegisterWithEmailAsync(string email, string loginName, string password, int avatarId = 1, CancellationToken cancellationToken = default)
@@ -112,13 +123,23 @@ public sealed class AccountRuntime : IDisposable
         var record = identifier.Contains('@', StringComparison.Ordinal)
             ? await FindByEmailAsync(identifier, cancellationToken).ConfigureAwait(false)
             : await store.FindByLoginNameAsync(identifier, cancellationToken).ConfigureAwait(false);
-        var ok = record is not null && record.PasswordHash is not null && Argon2idPasswordHasher.Verify(record.PasswordHash, password) && record.Status == "active";
-        var failureCode = record?.Status == "banned" ? AccountErrorCode.AccountBanned : AccountErrorCode.WrongPassword;
-        await store.RecordLoginAttemptAsync(identifier, port, ok ? "success" : "failure", ok ? null : failureCode, ip, userAgent, record?.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false);
-        if (!ok) return null;
-        Restore(record!);
-        await store.TouchLastLoginAsync(record!.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false);
-        return record;
+        var passwordMatches = record is not null && record.PasswordHash is not null && Argon2idPasswordHasher.Verify(record.PasswordHash, password);
+        if (!passwordMatches || record is null || !string.Equals(record.Status, "active", StringComparison.Ordinal))
+        {
+            var failureCode = record?.Status == "banned" ? AccountErrorCode.AccountBanned : AccountErrorCode.WrongPassword;
+            await store.RecordLoginAttemptAsync(identifier, port, "failure", failureCode, ip, userAgent, record?.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+
+        var active = await RefreshAndTouchActiveAsync(record, cancellationToken).ConfigureAwait(false);
+        if (active is null)
+        {
+            await store.RecordLoginAttemptAsync(identifier, port, "failure", AccountErrorCode.AccountBanned, ip, userAgent, record.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+
+        await store.RecordLoginAttemptAsync(identifier, port, "success", null, ip, userAgent, active.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false);
+        return active;
     }
 
     public bool VerifyAccountAuthCredential(string credential, out AccountAuthPrincipal principal, out string errorCode)
@@ -137,6 +158,8 @@ public sealed class AccountRuntime : IDisposable
 
     public AdmissionVerifyOutcome VerifyAdmission(string admissionCredential, AdmissionAllocationClaims allocationContext)
         => AdmissionCredential.Verify(admissionCredential, options.AdmissionKeyId, AdmissionPublicKey, options.Clock, allocationContext);
+
+    public void Audit(string kind, IReadOnlyDictionary<string, string> fields) => options.Audit.Write(kind, fields);
 
     public (string Credential, ulong ExpiresAt) IssueAdmissionCredential(AccountAuthPrincipal principal, AdmissionAllocationClaims claims)
     {
@@ -186,6 +209,19 @@ public sealed class AccountRuntime : IDisposable
         }
     }
 
+    private async Task<AccountRecord?> RefreshAndTouchActiveAsync(AccountRecord record, CancellationToken cancellationToken)
+    {
+        var current = await store.FindByAccountIdAsync(record.AccountId, cancellationToken).ConfigureAwait(false);
+        if (current is null || !string.Equals(current.Status, "active", StringComparison.Ordinal)) return null;
+        if (!await store.TouchLastLoginAsync(current.EntityId, UtcNow(), cancellationToken).ConfigureAwait(false)) return null;
+
+        // Re-read after the conditional update so a concurrent durable ban is observed before issuing credentials.
+        current = await store.FindByAccountIdAsync(current.AccountId, cancellationToken).ConfigureAwait(false);
+        if (current is null || !string.Equals(current.Status, "active", StringComparison.Ordinal)) return null;
+        Restore(current);
+        return current;
+    }
+
     private async Task<LoginOrRegisterOutcome> IssueAsync(AccountRecord record, bool newlyCreated, LoginOrRegisterRequest request, CancellationToken cancellationToken)
     {
         var issuedAt = options.Clock.UnixSeconds;
@@ -233,10 +269,16 @@ internal sealed class FixedWindowRateLimiter
     private readonly Dictionary<string, Queue<ulong>> windows = new(StringComparer.Ordinal);
     private readonly object gate = new();
     public FixedWindowRateLimiter(AccountRateLimitOptions options) => this.options = options;
+    internal int TrackedKeyCount
+    {
+        get { lock (gate) return windows.Count; }
+    }
+
     public bool Allow(string? ip, string loginName, string? accountId, ulong now)
     {
         lock (gate)
         {
+            CleanupStale(now);
             return AllowKey("ip:" + (ip ?? "unknown"), options.MaxRequestsPerIp, now)
                 && AllowKey("name:" + loginName, options.MaxRequestsPerLoginName, now)
                 && (accountId is null || AllowKey("account:" + accountId, options.MaxRequestsPerAccount, now));
@@ -244,9 +286,50 @@ internal sealed class FixedWindowRateLimiter
     }
     private bool AllowKey(string key, int max, ulong now)
     {
-        if (!windows.TryGetValue(key, out var queue)) windows[key] = queue = new Queue<ulong>();
-        while (queue.Count > 0 && now - queue.Peek() >= (ulong)options.WindowSeconds) queue.Dequeue();
+        if (!windows.TryGetValue(key, out var queue))
+        {
+            EnsureCapacity(now);
+            windows[key] = queue = new Queue<ulong>();
+        }
+        Trim(queue, now);
         if (queue.Count >= max) return false;
         queue.Enqueue(now); return true;
+    }
+
+    private void CleanupStale(ulong now)
+    {
+        foreach (var pair in windows.ToArray())
+        {
+            Trim(pair.Value, now);
+            if (pair.Value.Count == 0) windows.Remove(pair.Key);
+        }
+    }
+
+    private void EnsureCapacity(ulong now)
+    {
+        if (windows.Count < options.MaxTrackedKeys) return;
+        CleanupStale(now);
+        while (windows.Count >= options.MaxTrackedKeys && windows.Count > 0)
+        {
+            string? oldestKey = null;
+            ulong oldest = ulong.MaxValue;
+            foreach (var pair in windows)
+            {
+                var first = pair.Value.Count == 0 ? 0 : pair.Value.Peek();
+                if (oldestKey is null || first < oldest)
+                {
+                    oldestKey = pair.Key;
+                    oldest = first;
+                }
+            }
+            if (oldestKey is null) break;
+            windows.Remove(oldestKey);
+        }
+    }
+
+    private void Trim(Queue<ulong> queue, ulong now)
+    {
+        while (queue.Count > 0 && now >= queue.Peek() && now - queue.Peek() >= (ulong)options.WindowSeconds)
+            queue.Dequeue();
     }
 }

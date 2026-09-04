@@ -49,6 +49,22 @@ public sealed class AccountProtocolWebSocketTests
     }
 
     [Fact]
+    public async Task malformed_message_type_returns_invalid_request_and_closes()
+    {
+        await using var fixture = await AccountRuntimeFixture.CreateAsync();
+        using var runtime = fixture.CreateRuntime("test");
+        await using var app = await StartAsync(runtime, new AccountProtocolOptions());
+        using var client = await ConnectAsync(app);
+        var payload = Encoding.UTF8.GetBytes("{\"messageType\":123,\"loginName\":\"alice\",\"password\":\"123456\"}");
+
+        await client.SendAsync(payload, WebSocketMessageType.Text, true, TestContext.Current.CancellationToken);
+        var received = await ReceiveUntilCloseAsync(client);
+
+        Assert.Contains("\"code\":\"invalid_request\"", received, StringComparison.Ordinal);
+        Assert.Equal(WebSocketState.Closed, client.State);
+    }
+
+    [Fact]
     public async Task idle_timeout_closes_idle_connection()
     {
         await using var fixture = await AccountRuntimeFixture.CreateAsync();

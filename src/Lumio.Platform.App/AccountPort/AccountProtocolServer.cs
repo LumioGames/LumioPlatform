@@ -18,39 +18,54 @@ public static class AccountProtocolServer
 {
     public static void Map(WebApplication app, AccountRuntime runtime, AccountProtocolOptions options)
     {
-        ArgumentNullException.ThrowIfNull(app);
         ArgumentNullException.ThrowIfNull(runtime);
+        Map(app, () => runtime, options);
+    }
+
+    public static void Map(WebApplication app, Func<AccountRuntime> runtimeFactory, AccountProtocolOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(runtimeFactory);
         ArgumentNullException.ThrowIfNull(options);
         options.Validate();
         var connections = new SemaphoreSlim(options.MaxConcurrentConnections, options.MaxConcurrentConnections);
         app.UseWebSockets();
-        app.Map("/account", branch => branch.Run(context => HandleRequestAsync(context, runtime, options, connections)));
+        app.Map("/account", branch => branch.Run(context => HandleRequestAsync(context, runtimeFactory(), options, connections)));
     }
 
     private static async Task HandleRequestAsync(HttpContext context, AccountRuntime runtime, AccountProtocolOptions options, SemaphoreSlim connections)
     {
         if (!context.WebSockets.IsWebSocketRequest || !context.WebSockets.WebSocketRequestedProtocols.Contains(WireAccountPort.Subprotocol, StringComparer.Ordinal))
         {
+            runtime.Audit("account_connection_rejected", Fields(context, ("reason", "invalid_handshake")));
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
         if (!OriginAllowed(context, options))
         {
+            runtime.Audit("account_connection_rejected", Fields(context, ("reason", "origin_denied")));
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
         if (!await connections.WaitAsync(0, context.RequestAborted).ConfigureAwait(false))
         {
+            runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "connections"), ("outcome", "rejected")));
             context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return;
         }
         try
         {
             using var socket = await context.WebSockets.AcceptWebSocketAsync(WireAccountPort.Subprotocol).ConfigureAwait(false);
+            runtime.Audit("account_connection_accepted", Fields(context, ("subprotocol", WireAccountPort.Subprotocol)));
             await RunConnectionAsync(context, socket, runtime, options).ConfigureAwait(false);
+        }
+        catch (WebSocketException)
+        {
+            runtime.Audit("account_protocol_error", Fields(context, ("phase", "connection")));
         }
         finally
         {
+            runtime.Audit("account_connection_closed", Fields(context, ("outcome", "closed")));
             connections.Release();
         }
     }
@@ -68,12 +83,20 @@ public static class AccountProtocolServer
             }
             catch (InvalidDataException ex)
             {
+                runtime.Audit("account_protocol_error", Fields(context, ("code", AccountErrorCode.InvalidRequest), ("phase", "receive")));
                 await WriteErrorAndCloseAsync(socket, AccountErrorCode.InvalidRequest, ex.Message, options, cancellation).ConfigureAwait(false);
                 return;
             }
             catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
             {
+                runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "idle_timeout"), ("outcome", "closed")));
                 await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "idle_timeout", cancellation).ConfigureAwait(false);
+                return;
+            }
+            catch (WebSocketException)
+            {
+                runtime.Audit("account_protocol_error", Fields(context, ("phase", "receive")));
+                await CloseQuietlyAsync(socket, WebSocketCloseStatus.InternalServerError, "connection_error", cancellation).ConfigureAwait(false);
                 return;
             }
             if (payload is null || type == WebSocketMessageType.Close)
@@ -84,16 +107,19 @@ public static class AccountProtocolServer
             }
             if (type != WebSocketMessageType.Text)
             {
+                runtime.Audit("account_protocol_error", Fields(context, ("code", AccountErrorCode.InvalidRequest), ("phase", "message_type")));
                 await WriteErrorAndCloseAsync(socket, AccountErrorCode.InvalidRequest, "expected a text frame", options, cancellation).ConfigureAwait(false);
                 return;
             }
             if (payload.Length > options.MaxRequestJsonBytes)
             {
+                runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "request_json"), ("outcome", "closed")));
                 await WriteErrorAndCloseAsync(socket, AccountErrorCode.InvalidRequest, "request JSON exceeds maxRequestJsonBytes", options, cancellation).ConfigureAwait(false);
                 return;
             }
             if (!TryReadLogin(payload, out var loginName, out var password, out var botToolCredential))
             {
+                runtime.Audit("account_protocol_error", Fields(context, ("code", AccountErrorCode.InvalidRequest), ("phase", "json")));
                 await WriteErrorAndCloseAsync(socket, AccountErrorCode.InvalidRequest, "malformed LoginOrRegister", options, cancellation).ConfigureAwait(false);
                 return;
             }
@@ -102,14 +128,19 @@ public static class AccountProtocolServer
             if (outcome.Accepted)
             {
                 try { await WriteAckAsync(socket, outcome, options, cancellation).ConfigureAwait(false); }
-                catch (InvalidDataException) { await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "send_queue_limit", cancellation).ConfigureAwait(false); return; }
-                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested) { await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "slow_consumer", cancellation).ConfigureAwait(false); return; }
+                catch (InvalidDataException) { runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "send_queue"), ("outcome", "closed"))); await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "send_queue_limit", cancellation).ConfigureAwait(false); return; }
+                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested) { runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "slow_consumer"), ("outcome", "closed"))); await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "slow_consumer", cancellation).ConfigureAwait(false); return; }
+                catch (WebSocketException) { runtime.Audit("account_protocol_error", Fields(context, ("phase", "send"))); await CloseQuietlyAsync(socket, WebSocketCloseStatus.InternalServerError, "connection_error", cancellation).ConfigureAwait(false); return; }
             }
             else
             {
-                try { await WriteErrorAsync(socket, outcome.Code ?? AccountErrorCode.InvalidRequest, outcome.Detail ?? string.Empty, options, cancellation).ConfigureAwait(false); }
-                catch (InvalidDataException) { await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "send_queue_limit", cancellation).ConfigureAwait(false); return; }
-                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested) { await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "slow_consumer", cancellation).ConfigureAwait(false); return; }
+                var code = outcome.Code ?? AccountErrorCode.InvalidRequest;
+                if (code == AccountErrorCode.RateLimited)
+                    runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "login"), ("outcome", "rejected")));
+                try { await WriteErrorAsync(socket, code, outcome.Detail ?? string.Empty, options, cancellation).ConfigureAwait(false); }
+                catch (InvalidDataException) { runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "send_queue"), ("outcome", "closed"))); await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "send_queue_limit", cancellation).ConfigureAwait(false); return; }
+                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested) { runtime.Audit("account_limit_exceeded", Fields(context, ("limit", "slow_consumer"), ("outcome", "closed"))); await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, "slow_consumer", cancellation).ConfigureAwait(false); return; }
+                catch (WebSocketException) { runtime.Audit("account_protocol_error", Fields(context, ("phase", "send"))); await CloseQuietlyAsync(socket, WebSocketCloseStatus.InternalServerError, "connection_error", cancellation).ConfigureAwait(false); return; }
                 if (outcome.Code == AccountErrorCode.InvalidRequest) return;
             }
         }
@@ -130,7 +161,7 @@ public static class AccountProtocolServer
             using var document = JsonDocument.Parse(json);
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object
-                || !root.TryGetProperty("messageType", out var messageType) || messageType.GetString() != WireAccountPort.LoginOrRegisterMessageType
+                || !root.TryGetProperty("messageType", out var messageType) || messageType.ValueKind != JsonValueKind.String || messageType.GetString() != WireAccountPort.LoginOrRegisterMessageType
                 || !root.TryGetProperty("loginName", out var login) || login.ValueKind != JsonValueKind.String
                 || !root.TryGetProperty("password", out var pass) || pass.ValueKind != JsonValueKind.String) return false;
             loginName = login.GetString() ?? string.Empty; password = pass.GetString() ?? string.Empty;
@@ -182,7 +213,10 @@ public static class AccountProtocolServer
 
     private static async Task WriteErrorAndCloseAsync(WebSocket socket, string code, string detail, AccountProtocolOptions options, CancellationToken cancellationToken)
     {
-        try { await WriteErrorAsync(socket, code, detail, options, cancellationToken).ConfigureAwait(false); } catch (WebSocketException) { }
+        try { await WriteErrorAsync(socket, code, detail, options, cancellationToken).ConfigureAwait(false); }
+        catch (WebSocketException) { }
+        catch (InvalidDataException) { }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
         await CloseQuietlyAsync(socket, WebSocketCloseStatus.PolicyViolation, code, cancellationToken).ConfigureAwait(false);
     }
 
@@ -201,5 +235,15 @@ public static class AccountProtocolServer
             try { await socket.CloseAsync(status, description, cancellationToken).ConfigureAwait(false); } catch (WebSocketException) { }
             catch (OperationCanceledException) { }
         }
+    }
+
+    private static Dictionary<string, string> Fields(HttpContext context, params (string Key, string Value)[] fields)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["connectionId"] = context.TraceIdentifier,
+        };
+        foreach (var (key, value) in fields) result[key] = value;
+        return result;
     }
 }

@@ -40,10 +40,11 @@ public sealed class AccountRateLimitOptions
     public int MaxRequestsPerIp { get; init; } = 30;
     public int MaxRequestsPerLoginName { get; init; } = 30;
     public int MaxRequestsPerAccount { get; init; } = 30;
+    public int MaxTrackedKeys { get; init; } = 4096;
 
     public void Validate()
     {
-        if (WindowSeconds <= 0 || MaxRequestsPerIp <= 0 || MaxRequestsPerLoginName <= 0 || MaxRequestsPerAccount <= 0)
+        if (WindowSeconds <= 0 || MaxRequestsPerIp <= 0 || MaxRequestsPerLoginName <= 0 || MaxRequestsPerAccount <= 0 || MaxTrackedKeys <= 0)
             throw new ArgumentException("account rate limits must be positive.");
     }
 }
