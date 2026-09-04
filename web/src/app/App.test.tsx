@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, expect, test } from 'vitest';
 import { AppRoutes } from './App';
@@ -73,4 +73,15 @@ test('admin surfaces expose operational tables and settings', () => {
   renderAt('/admin/settings');
   expect(screen.getByRole('heading', { name: '平台设置' })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: '保存设置' })).toBeInTheDocument();
+});
+
+test('feedback form validates content and records a new entry', () => {
+  renderAt('/feedback');
+  fireEvent.click(screen.getByRole('button', { name: '提交反馈' }));
+  expect(screen.getByRole('status')).toHaveTextContent('请填写标题');
+  fireEvent.change(screen.getByLabelText(/标题/), { target: { value: '房间反馈' } });
+  fireEvent.change(screen.getByLabelText(/详细描述/), { target: { value: '加载需要更清晰的状态提示' } });
+  fireEvent.click(screen.getByRole('button', { name: '提交反馈' }));
+  expect(screen.getByRole('status')).toHaveTextContent('收到了，谢谢');
+  expect(screen.getByText('房间反馈')).toBeInTheDocument();
 });
