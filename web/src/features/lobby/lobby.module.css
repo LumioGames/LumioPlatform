@@ -1,0 +1,66 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-sp-8);
+}
+
+.hero {
+  min-height: 22rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 12rem;
+  align-items: center;
+  gap: var(--ui-sp-6);
+  padding: var(--ui-sp-7);
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  overflow: hidden;
+}
+
+.heroCopy,
+.heroArt {
+  position: relative;
+  z-index: 1;
+}
+
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ui-sp-4);
+  max-width: 36rem;
+}
+
+.heroArt {
+  display: grid;
+  place-items: center;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-sp-5);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ui-sp-4);
+}
+
+.sectionHeading > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-sp-2);
+}
+
+@media (max-width: 640px) {
+  .page { gap: var(--ui-sp-7); }
+  .hero {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    padding: var(--ui-sp-5);
+  }
+  .heroArt { display: none; }
+  .sectionHeading { align-items: flex-start; flex-direction: column; }
+}
