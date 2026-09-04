@@ -54,6 +54,8 @@
   gap: var(--ui-sp-5);
 }
 
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-sp-3); }.toolbar .ui-input { max-width: 22rem; }.tableCard { padding: var(--ui-sp-2); overflow: hidden; }.tableCard code { color: var(--ui-primary-d); font-size: var(--ui-fs-micro); }.overviewGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ui-sp-4); }.overviewGrid > .ui-card { padding: var(--ui-sp-5); }.cardHeading { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-sp-3); }.cardHeading h3 { margin: 0; }.emptyMetric { min-height: 7rem; display: grid; place-items: center; color: var(--ui-faint); font-size: var(--ui-fs-cap); }.activityList { display: grid; gap: var(--ui-sp-2); margin-top: var(--ui-sp-4); color: var(--ui-muted); font-size: var(--ui-fs-cap); }.activityList span { padding: var(--ui-sp-3); background: var(--ui-field); border-radius: var(--ui-radius-xs); }.settings { max-width: 32rem; padding: var(--ui-sp-5); }
+
 .sectionTitle {
   display: flex;
   align-items: baseline;
@@ -90,4 +92,5 @@
   }
   .sideNav .ui-kicker { grid-column: 1 / -1; }
   .sectionTitle { align-items: flex-start; flex-direction: column; }
+  .toolbar { align-items: stretch; flex-direction: column; }.toolbar .ui-input { max-width: none; }.overviewGrid { grid-template-columns: 1fr; }
 }
