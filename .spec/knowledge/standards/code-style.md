@@ -41,6 +41,7 @@ metadata:
 - API 调用只经 `src/api/client.ts`（`openapi-fetch` + 生成的 `paths` 类型）；**不得手写 DTO 类型**，不得直接 `fetch('/api/...')`。
 - 目录：`src/app/`（路由与布局）、`src/features/<name>/`（页面与组件）、`src/api/`（客户端与生成类型）、`src/stores/`（Zustand）。后台页面在 `src/features/admin/`，按 `role === 'admin'` 路由守卫。
 - 文案中文；不引入 UI 框架大包（先用 CSS Modules），需要时另立决策。
+- 色板、字阶、纸片卡片、品牌标以 `web/src/styles/` 为真值（设计见 [`platform-ui.md`](../features/platform-ui.md)）；`main.tsx` 只全局引入 `src/styles/index.css`，功能布局用 CSS Modules，不得另起色板。
 
 ## 数据库（PostgreSQL）
 

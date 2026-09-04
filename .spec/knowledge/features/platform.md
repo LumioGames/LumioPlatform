@@ -50,7 +50,7 @@ LumioPlatform/
 ├── src/Lumio.Platform.Account/       账号域（从 LumioServer/account-server/src/Lumio.Server.Account 搬入，见 account.md）
 ├── src/Lumio.Platform.App/           宿主：`Program`（子命令分发）、`PlatformHost.Build(args, options, requireDatabase)`、`PlatformOptions`（只读环境变量）、`OpenApiExport`、端点分组（Account/ Lobby/ Feedback/ Admin/ Track/）、`AccountPort/`（AccountProtocolServer 搬入，挂 `/account`）、`openapi/v1.json`（入库生成物）、`wwwroot/`（不入库，由 web 构建产出）
 ├── tests/Lumio.Platform.Tests/       xunit.v3；宿主测试起真进程；契约用例逐条对应
-├── web/                              React 19 + TS + Vite（`pnpm`）；`build` 输出到 `../src/Lumio.Platform.App/wwwroot`；`verify` = lint + typecheck + test + openapi:check
+├── web/                              React 19 + TS + Vite（`pnpm`）；`src/styles/` 视觉令牌（见 platform-ui.md）；`design-preview.html` 活样张；`build` 输出到 `../src/Lumio.Platform.App/wwwroot`；`verify` = lint + typecheck + test + openapi:check
 ├── docker-compose.yml                postgres:17 + platform（Dockerfile 多阶段：pnpm build → dotnet publish）
 └── .github/workflows/repository-policy.yml   spec-lint + README 策略 + dotnet build/test（Postgres service）+ pnpm verify
 ```
@@ -107,4 +107,4 @@ LumioPlatform/
 ## 相关
 
 - 架构仓：ADR-054、ADR-061、`engine/wire/account-port-v1.json`、`engine/wire/platform-port-v1.json`、`knowledge/features/ds-server.md` M2
-- 本仓：[`standards/repository-architecture.md`](../standards/repository-architecture.md)、[`plans/2026-09-04-platform-ms1-cards.md`](../../plans/2026-09-04-platform-ms1-cards.md)
+- 本仓：[`standards/repository-architecture.md`](../standards/repository-architecture.md)、[`platform-ui.md`](platform-ui.md)、[`plans/2026-09-04-platform-ms1-cards.md`](../../plans/2026-09-04-platform-ms1-cards.md)

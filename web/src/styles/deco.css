@@ -1,0 +1,95 @@
+/* 装饰：品牌标、体素、色调块。几何从 GameTech 缩到网页尺度。
+   视频里的 Idle / Reveal / orb 光球不迁——网页不靠常驻动效说话。 */
+
+.ui-brand {
+  --ui-brand-size: 2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--ui-brand-size) * 0.28);
+  text-decoration: none;
+  color: inherit;
+}
+.ui-brand__mark {
+  width: var(--ui-brand-size);
+  height: var(--ui-brand-size);
+  border-radius: calc(var(--ui-brand-size) * 0.29);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(150deg, var(--ui-primary), #9aa6ff);
+  box-shadow: 0 10px 24px -8px rgba(124, 140, 255, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.ui-brand__pix {
+  display: grid;
+  grid-template-columns: repeat(3, calc(var(--ui-brand-size) * 0.13));
+  grid-template-rows: repeat(3, calc(var(--ui-brand-size) * 0.13));
+  gap: calc(var(--ui-brand-size) * 0.04);
+}
+.ui-brand__pix i { background: #fff; border-radius: 1px; }
+.ui-brand__pix i:nth-child(even) { opacity: 0.35; }
+.ui-brand__txt { display: flex; flex-direction: column; line-height: 1.08; }
+.ui-brand__name {
+  font-family: var(--ui-font-num);
+  font-weight: 800;
+  font-size: calc(var(--ui-brand-size) * 0.47);
+  letter-spacing: 0.02em;
+  color: var(--ui-ink);
+}
+.ui-brand__sub {
+  font-family: var(--ui-font-num);
+  font-weight: 700;
+  font-size: calc(var(--ui-brand-size) * 0.26);
+  letter-spacing: var(--ui-track-wide);
+  color: var(--ui-faint);
+  margin-top: calc(var(--ui-brand-size) * 0.04);
+}
+
+.ui-tone {
+  --tone: var(--ui-primary);
+  background: linear-gradient(150deg,
+    color-mix(in srgb, var(--tone) 16%, #fff),
+    color-mix(in srgb, var(--tone) 30%, #fff));
+}
+
+.ui-voxel {
+  --ui-vox: 3.5rem;
+  --tone: var(--ui-primary);
+  position: relative;
+  width: var(--ui-vox);
+  height: var(--ui-vox);
+  transform-style: preserve-3d;
+  transform: rotateX(-24deg) rotateZ(-45deg);
+}
+.ui-voxel > i {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--ui-vox) * 0.05);
+  backface-visibility: hidden;
+}
+.ui-voxel > i:nth-child(1) {
+  background: color-mix(in srgb, var(--tone) 42%, #fff);
+  transform: rotateX(90deg) translateZ(calc(var(--ui-vox) / 2));
+}
+.ui-voxel > i:nth-child(2) {
+  background: color-mix(in srgb, var(--tone) 88%, #fff);
+  transform: translateZ(calc(var(--ui-vox) / 2));
+}
+.ui-voxel > i:nth-child(3) {
+  background: color-mix(in srgb, var(--tone) 82%, #000);
+  transform: rotateY(-90deg) translateZ(calc(var(--ui-vox) / 2));
+}
+
+.ui-grid-bg {
+  position: relative;
+}
+.ui-grid-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  --ui-grid-size: 2rem;
+  background-image:
+    linear-gradient(rgba(124, 140, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 140, 255, 0.1) 1px, transparent 1px);
+  background-size: var(--ui-grid-size) var(--ui-grid-size);
+  mask-image: linear-gradient(160deg, #000 8%, transparent 58%);
+}

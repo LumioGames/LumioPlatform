@@ -1,0 +1,95 @@
+/* Lumio Platform · 设计令牌
+   身份色、纸片卡片配方来自视频 DS 的 GameTech 主题（blog.lumio.games）。
+   字阶 / 间距 / 圆角按 16px 网页重定，不是 1440×1080 远看尺度。
+   权威：.spec/knowledge/features/platform-ui.md ；决策 0004。 */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap");
+
+:root {
+  /* 身份色（与博客 / GitHub 徽章同一套，唯一直接沿用的部分） */
+  --ui-primary: #7c8cff;
+  --ui-primary-d: #6171f0;
+  --ui-mint: #5de2c6;
+  --ui-amber: #ffb86b;
+  --ui-rose: #ff7ea6;
+  --ui-ink: #1e2a3a;
+  --ui-title: #243056;
+  --ui-muted: #6b7894;
+  --ui-faint: #9aa6be;
+  --ui-line: #e7ecf6;
+  --ui-field: #f7faff;
+  --ui-bg-2: #eaf0ff;
+
+  --ui-up: #1f8a5b;
+  --ui-up-bg: #e3f7ed;
+  --ui-down: #c2415b;
+  --ui-down-bg: #fce7ec;
+  --ui-danger: #d9342a;
+
+  --ui-bg: var(--ui-field);
+  --ui-text: var(--ui-ink);
+  --ui-text-2: var(--ui-muted);
+  --ui-text-3: var(--ui-faint);
+  --ui-accent: var(--ui-primary);
+  --ui-warn: var(--ui-rose);
+  --ui-grad: linear-gradient(135deg, var(--ui-primary-d), var(--ui-mint));
+  --ui-track-wide: 0.22em;
+
+  /* 网页字阶：正文 16px 是可读下限；大厅标题靠层级不靠砸字号 */
+  --ui-fs-hero: 2.5rem;     /* 40px · 大厅欢迎语 */
+  --ui-fs-display: 2rem;   /* 32px · 看板数字 */
+  --ui-fs-h1: 1.75rem;     /* 28px */
+  --ui-fs-h2: 1.25rem;     /* 20px */
+  --ui-fs-h3: 1.125rem;    /* 18px */
+  --ui-fs-body: 1rem;      /* 16px */
+  --ui-fs-cap: 0.8125rem;  /* 13px */
+  --ui-fs-micro: 0.75rem;  /* 12px */
+
+  --ui-lh-tight: 1.08;
+  --ui-lh-snug: 1.28;
+  --ui-lh-body: 1.5;
+
+  --ui-fw-normal: 400;
+  --ui-fw-medium: 500;
+  --ui-fw-bold: 700;
+  --ui-fw-heavy: 800;
+
+  --ui-font: "Noto Sans SC", "Inter", system-ui, sans-serif;
+  --ui-font-num: "Inter", system-ui, sans-serif;
+  --ui-font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --ui-sp-1: 0.25rem;  /* 4 */
+  --ui-sp-2: 0.5rem;   /* 8 */
+  --ui-sp-3: 0.75rem;  /* 12 */
+  --ui-sp-4: 1rem;     /* 16 */
+  --ui-sp-5: 1.5rem;   /* 24 */
+  --ui-sp-6: 2rem;     /* 32 */
+  --ui-sp-7: 3rem;     /* 48 */
+  --ui-sp-8: 4rem;     /* 64 */
+
+  --ui-radius: 1rem;     /* 16 · 卡片 */
+  --ui-radius-sm: 0.75rem;
+  --ui-radius-xs: 0.5rem;
+  --ui-radius-pill: 999px;
+
+  /* 纸片卡片：不透明白底 + 实色描边 + 克制投影。不做玻璃。 */
+  --ui-card-fill: #fff;
+  --ui-card-edge: var(--ui-line);
+  --ui-card-drop: 0 1px 2px rgba(30, 42, 58, 0.04), 0 14px 40px -16px rgba(53, 68, 120, 0.2);
+  --ui-card-pop: 0 22px 56px -18px rgba(53, 68, 120, 0.42);
+  --ui-glow: 0 18px 38px -14px rgba(97, 113, 240, 0.8);
+
+  --ui-dur-fast: 120ms;
+  --ui-dur: 180ms;
+  --ui-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --ui-nav-h: 3.5rem;
+  --ui-max: 70rem;
+  --ui-focus: 2px solid var(--ui-primary-d);
+}
+
+/* 后台：同一套色，更紧的圆角与行高 */
+[data-surface="admin"] {
+  --ui-radius: 0.75rem;
+  --ui-fs-hero: 1.75rem;
+}

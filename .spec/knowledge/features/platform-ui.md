@@ -1,0 +1,74 @@
+---
+name: platform-ui
+description: 平台网页视觉——GameTech 身份色与纸片卡片按 16px 重定的令牌与原语；改大厅或后台外观时查
+metadata:
+  type: doc
+  status: 设计中
+---
+
+# 平台网页视觉
+
+网页 SPA 的视觉真值在 `web/src/styles/`。令牌来自视频仓 `@lumio/video-ds` 的 **GameTech** 主题（与 `blog.lumio.games`、GitHub 徽章同一套身份色），按 16px 网页尺度重写，不是把视频 CSS 原样搬进来。
+
+活样张：用浏览器打开 [`web/design-preview.html`](../../../web/design-preview.html)。
+
+## 背景 / 目标
+
+- 视频 DS 是 4:3 / 1440×1080 的播与录：`Stage` / `Deck` / `Reveal`、228px 爆点字、`user-select: none`、没有 hover。
+- 本仓是大厅 / 注册登录 / 反馈 / 运营后台。需要表单、焦点环、表格、空状态，字号要从「投影远看」收回「一臂距离」。
+- 游戏内美术（动物玩偶派对三方向比稿）仍在 `LumioGame/docs/specs/art-style-pitch.md`，**不锁进平台壳**。
+
+## 设计
+
+### 迁什么
+
+| 来源 | 落到本仓 | 网页上怎么用 |
+| --- | --- | --- |
+| GameTech 身份色 `primary / mint / ink / field` | `--ui-*`（`tokens.css`） | 全站色板 |
+| 纸片卡片（不透明白底 + 实色描边 + 克制投影，不做玻璃） | `.ui-card` | 游戏卡、表单、对话框 |
+| `BrandMark` 3×3 十字暗纹 | `.ui-brand` | 顶栏 Logo |
+| `gt-tone` / 等距体素 / 淡网格 | `.ui-tone` `.ui-voxel` `.ui-grid-bg` | 大厅点缀；体素不是图标系统 |
+| 数字渐变字（primary-d → mint） | `.ui-stat__n` | 后台看板数字 |
+| Noto Sans SC + Inter | `--ui-font` / `--ui-font-num` | 中文正文、等宽数字 |
+
+### 不迁什么
+
+视频画布与播控：`Stage` `Deck` `Scene` `Reveal` `Sequence` `SplitText` `CountUp`。
+视频版式：`SplitStage` `PhoneSlot` `BleedPair`、4:3/9:16 字阶、`--lm-fs-hero: 228px`。
+视频内容件：`ChatLog` `VersusPanel` `OrgChart` `NameTag` `StickyNote` `TitleCard`。
+白板主题（暖纸 `#F7F5EF` + 马克笔蓝 `#1F5FD1`）——那是短视频母题，不是平台壳。
+`Idle` 常驻浮动、发光球、Silkscreen 点阵字、Chakra Petch / 得意黑爆点字。
+
+### 网页补上的（视频里没有）
+
+按钮（含 hover / disabled）、输入框焦点环、校验错误、状态胶囊、表格、空状态、顶栏、头像选择器、封禁确认。类名 `.ui-*`。功能页布局仍走 CSS Modules，不引入 UI 框架。
+
+### 两档密度
+
+- 默认（玩家面）：大厅卡片、宽松留白。
+- `[data-surface="admin"]`：同一色板，圆角与标题收一档。后台看起来是同一栋楼的安静层，不是另一套产品。
+
+### 文件
+
+| 文件 | 职责 |
+| --- | --- |
+| `web/src/styles/tokens.css` | 色 / 字 / 空 / 圆角 / 动效时长 |
+| `web/src/styles/base.css` | `html`/`body`、标题、焦点、减弱动效 |
+| `web/src/styles/primitives.css` | 导航、卡片、按钮、表单、表格、看板 |
+| `web/src/styles/deco.css` | 品牌标、体素、色调块 |
+| `web/src/styles/index.css` | 以上四份的入口；SPA `main.tsx` 只 import 这一份 |
+| `web/design-preview.html` | 无构建即可打开的活样张 |
+
+P0-1 搭 `web/` 脚手架时必须保留本目录与活样张；`main.tsx` 全局引入 `src/styles/index.css`。
+
+## 待解决
+
+- 12 张默认头像资产（P2-2 占位 SVG）；活样张里的 emoji 只是占位，不进生产。
+- 字体是否改为自托管（现在跟视频 DS 一样走 Google Fonts `@import`）。
+- 游戏封面图（`cover_url`）的画幅与安全区。
+
+## 相关
+
+- [决策 0004](../../decisions/0004-platform-ui-from-gametech.md)
+- [`platform.md`](platform.md)、[`lobby-launch.md`](lobby-launch.md)、[`admin-analytics.md`](admin-analytics.md)
+- [`standards/code-style.md`](../standards/code-style.md)

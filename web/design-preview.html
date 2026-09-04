@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lumio 平台 · 视觉令牌活样张</title>
+  <link rel="stylesheet" href="src/styles/index.css" />
+  <style>
+    .spec { display: flex; flex-direction: column; gap: var(--ui-sp-7); }
+    .spec section { display: flex; flex-direction: column; gap: var(--ui-sp-4); }
+    .swatches { display: flex; flex-wrap: wrap; gap: var(--ui-sp-3); }
+    .swatch {
+      width: 6.5rem; border-radius: var(--ui-radius-xs); overflow: hidden;
+      border: 1px solid var(--ui-line); background: #fff; font-size: var(--ui-fs-micro);
+    }
+    .swatch b { display: block; height: 2.4rem; }
+    .swatch span { display: block; padding: 0.35rem 0.5rem; color: var(--ui-muted); }
+    .row { display: flex; flex-wrap: wrap; gap: var(--ui-sp-3); align-items: center; }
+    .pad { padding: var(--ui-sp-5); }
+  </style>
+</head>
+<body>
+  <div class="ui-shell">
+    <header class="ui-nav">
+      <a class="ui-brand" href="#top" aria-label="Lumio">
+        <span class="ui-brand__mark">
+          <span class="ui-brand__pix" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </span>
+        </span>
+        <span class="ui-brand__txt">
+          <span class="ui-brand__name">LUMIO</span>
+          <span class="ui-brand__sub">.GAMES</span>
+        </span>
+      </a>
+      <nav class="ui-nav__links">
+        <a href="#player" aria-current="page">玩家面</a>
+        <a href="#admin">后台</a>
+        <a href="#tokens">令牌</a>
+      </nav>
+    </header>
+
+    <main class="ui-main spec" id="top">
+      <header>
+        <p class="ui-kicker">Platform UI</p>
+        <h1 class="ui-hero">网页视觉令牌</h1>
+        <p class="ui-muted">从视频 DS 的 GameTech 身份色迁来，按 16px 网页重定。不是 1440×1080 画布，也不是游戏内 HUD。</p>
+      </header>
+
+      <section id="tokens">
+        <h2>身份色</h2>
+        <div class="swatches">
+          <div class="swatch"><b style="background:#7C8CFF"></b><span>primary</span></div>
+          <div class="swatch"><b style="background:#6171F0"></b><span>primary-d</span></div>
+          <div class="swatch"><b style="background:#5DE2C6"></b><span>mint</span></div>
+          <div class="swatch"><b style="background:#FFB86B"></b><span>amber</span></div>
+          <div class="swatch"><b style="background:#FF7EA6"></b><span>rose</span></div>
+          <div class="swatch"><b style="background:#1E2A3A"></b><span>ink</span></div>
+          <div class="swatch"><b style="background:#F7FAFF"></b><span>field</span></div>
+        </div>
+        <div class="row">
+          <div class="ui-voxel" style="--tone:var(--ui-primary)" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="ui-voxel" style="--tone:var(--ui-mint)" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="ui-voxel" style="--tone:var(--ui-amber)" aria-hidden="true"><i></i><i></i><i></i></div>
+          <span class="ui-hint">体素只当大厅点缀，不做图标系统。</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>按钮与状态</h2>
+        <div class="row">
+          <button class="ui-btn ui-btn--primary" type="button">开始游戏</button>
+          <button class="ui-btn ui-btn--ghost" type="button">加入飞书群</button>
+          <button class="ui-btn ui-btn--quiet" type="button">退出</button>
+          <button class="ui-btn ui-btn--danger" type="button">封禁</button>
+          <button class="ui-btn ui-btn--primary" type="button" disabled>发送验证码 59s</button>
+        </div>
+        <div class="row">
+          <span class="ui-pill ui-pill--new">新提交</span>
+          <span class="ui-pill ui-pill--triaged">处理中</span>
+          <span class="ui-pill ui-pill--closed">已关闭</span>
+          <span class="ui-pill ui-pill--active">正常</span>
+          <span class="ui-pill ui-pill--banned">已封禁</span>
+          <span class="ui-chip"><i style="--tone:var(--ui-mint)"></i> published</span>
+        </div>
+        <div class="ui-toast">注册成功，欢迎来到 Lumio</div>
+      </section>
+
+      <section id="player">
+        <h2>大厅卡片</h2>
+        <div class="ui-grid">
+          <a class="ui-card ui-card--game" href="#game">
+            <div class="ui-cover" style="--tone:var(--ui-primary)"></div>
+            <div class="ui-card__body">
+              <h3>体素炸弹人</h3>
+              <p class="ui-muted">玩偶积木棋盘上的炸弹赛。点开即联机。</p>
+              <span class="ui-btn ui-btn--primary ui-btn--sm">开始游戏</span>
+            </div>
+          </a>
+          <div class="ui-card ui-card--game is-soon">
+            <div class="ui-cover" style="--tone:var(--ui-amber)"></div>
+            <div class="ui-card__body">
+              <h3>起床战争 <span class="ui-pill ui-pill--soon">即将推出</span></h3>
+              <p class="ui-muted">两队玩偶保卫各自的床头堡。</p>
+            </div>
+          </div>
+          <div class="ui-card ui-card--game is-soon">
+            <div class="ui-cover" style="--tone:var(--ui-mint)"></div>
+            <div class="ui-card__body">
+              <h3>逃离鸭科夫 <span class="ui-pill ui-pill--soon">即将推出</span></h3>
+              <p class="ui-muted">橡皮鸭潜入玩具仓库摸零件。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>注册 / 头像</h2>
+        <form class="ui-card pad ui-form" onsubmit="return false">
+          <div class="ui-field">
+            <label for="email">邮箱</label>
+            <input class="ui-input" id="email" type="email" value="ada@lumio.games" autocomplete="email" />
+          </div>
+          <div class="ui-field">
+            <label for="user">用户名</label>
+            <input class="ui-input" id="user" value="Ada" aria-invalid="true" autocomplete="username" />
+            <p class="ui-error">3–32 位，字母开头，只能用 A–Z、数字、_ 和 -。暂不支持中文。</p>
+          </div>
+          <div class="ui-field">
+            <span>头像（12 个默认，不能上传）</span>
+            <div class="ui-avatar-grid" role="group" aria-label="选择头像">
+              <button class="ui-avatar is-on" type="button" aria-pressed="true">🦆</button>
+              <button class="ui-avatar" type="button">🐰</button>
+              <button class="ui-avatar" type="button">🐱</button>
+              <button class="ui-avatar" type="button">🐻</button>
+              <button class="ui-avatar" type="button">🐸</button>
+              <button class="ui-avatar" type="button">🐼</button>
+              <button class="ui-avatar" type="button">🦊</button>
+              <button class="ui-avatar" type="button">🐤</button>
+              <button class="ui-avatar" type="button">🦝</button>
+              <button class="ui-avatar" type="button">🐷</button>
+              <button class="ui-avatar" type="button">🦉</button>
+              <button class="ui-avatar" type="button">🦫</button>
+            </div>
+          </div>
+          <button class="ui-btn ui-btn--primary" type="submit">完成注册</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>空状态</h2>
+        <div class="ui-card ui-empty">
+          <div class="ui-voxel" style="--tone:var(--ui-faint)" aria-hidden="true"><i></i><i></i><i></i></div>
+          <p>还没有已发布的游戏</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>进不去 / 403</h2>
+        <div class="ui-card pad" style="max-width:26rem;display:flex;flex-direction:column;gap:var(--ui-sp-4)">
+          <h3>现在进不去</h3>
+          <p class="ui-muted">这局暂时接不上。回大厅再试一次。</p>
+          <div class="ui-actions">
+            <button class="ui-btn ui-btn--primary" type="button">回大厅</button>
+            <button class="ui-btn ui-btn--quiet" type="button">去反馈</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin" data-surface="admin">
+        <h2>后台密度</h2>
+        <div class="ui-stats">
+          <div class="ui-stat"><span class="ui-stat__n ui-num">128</span><span class="ui-stat__l">今日活跃</span></div>
+          <div class="ui-stat"><span class="ui-stat__n ui-num">412</span><span class="ui-stat__l">本周活跃</span></div>
+          <div class="ui-stat"><span class="ui-stat__n ui-num">36</span><span class="ui-stat__l">新注册</span></div>
+          <div class="ui-stat"><span class="ui-stat__n ui-num">9</span><span class="ui-stat__l">待处理反馈</span></div>
+        </div>
+        <div class="ui-card ui-table-wrap">
+          <table class="ui-table">
+            <thead>
+              <tr><th>UID</th><th>用户名</th><th>邮箱</th><th>状态</th><th></th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="ui-num">100001</td>
+                <td>Ada</td>
+                <td>ada@lumio.games</td>
+                <td><span class="ui-pill ui-pill--active">正常</span></td>
+                <td><button class="ui-btn ui-btn--danger ui-btn--sm" type="button">封禁</button></td>
+              </tr>
+              <tr>
+                <td class="ui-num">100002</td>
+                <td>Bot01</td>
+                <td>—</td>
+                <td><span class="ui-pill ui-pill--banned">已封禁</span></td>
+                <td><button class="ui-btn ui-btn--quiet ui-btn--sm" type="button">解封</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ui-card ui-dialog">
+          <h3>封禁 Ada？</h3>
+          <p class="ui-muted">封禁后网页和工具端口都登不进去。已发出的准入凭证会到期失效。</p>
+          <div class="ui-actions">
+            <button class="ui-btn ui-btn--danger" type="button">确认封禁</button>
+            <button class="ui-btn ui-btn--quiet" type="button">取消</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll(".ui-avatar-grid").forEach((grid) => {
+      grid.addEventListener("click", (event) => {
+        const btn = event.target.closest(".ui-avatar");
+        if (!btn) return;
+        grid.querySelectorAll(".ui-avatar").forEach((el) => {
+          el.classList.remove("is-on");
+          el.setAttribute("aria-pressed", "false");
+        });
+        btn.classList.add("is-on");
+        btn.setAttribute("aria-pressed", "true");
+      });
+    });
+  </script>
+</body>
+</html>

@@ -60,7 +60,7 @@ Tests require `PLATFORM_TEST_DB_CONNECTION_STRING` to point at a reachable Postg
 ## Documentation
 
 - Hub and dispatch: [`.spec/AGENTS.md`](.spec/AGENTS.md); knowledge index: [`.spec/knowledge/README.md`](.spec/knowledge/README.md); hard rules: [`.spec/rules/system.md`](.spec/rules/system.md).
-- Design: [platform overview](.spec/knowledge/features/platform.md) · [account domain](.spec/knowledge/features/account.md) · [lobby and launch](.spec/knowledge/features/lobby-launch.md) · [feedback](.spec/knowledge/features/feedback.md) · [console and analytics](.spec/knowledge/features/admin-analytics.md).
+- Design: [platform overview](.spec/knowledge/features/platform.md) · [account domain](.spec/knowledge/features/account.md) · [lobby and launch](.spec/knowledge/features/lobby-launch.md) · [feedback](.spec/knowledge/features/feedback.md) · [console and analytics](.spec/knowledge/features/admin-analytics.md) · [web visual language](.spec/knowledge/features/platform-ui.md).
 - Boundaries: [`repository-architecture.md`](.spec/knowledge/standards/repository-architecture.md); decisions: [`.spec/decisions/`](.spec/decisions/README.md); implementation blueprint: [`.spec/plans/2026-09-04-platform-ms1-cards.md`](.spec/plans/2026-09-04-platform-ms1-cards.md).
 
 ## Agent integration

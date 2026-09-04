@@ -104,7 +104,7 @@ W5  P5-1 集成考卷指向平台 + 退役 account-server（LumioGame + LumioSer
 2. 三项目依赖方向 `App → Account → Platform`；`App` 用 `Microsoft.NET.Sdk.Web`，`AssemblyName` = `lumio-platform`。
 3. `PlatformHost.Build(args, options, requireDatabase)` / `Program.Main` / `OpenApiExport` 按 platform.md「宿主关键形状」；`/healthz` 返回 `{ status, database }`，数据库不可达 503；SPA 回退排除 `/api` `/openapi` `/account` `/games`。
 4. 测试：迁移可应用（`MigrateAsync` 幂等）、`/healthz` 200 且 `database: ok`、缺连接串 `StartAsync` 抛 `OptionsValidationException`；连接串按 `decisions/0002` 只从 `PLATFORM_TEST_DB_CONNECTION_STRING` 读。
-5. `web/`：create-vite react-ts 当前模板版本（React 19、Vite 8、TypeScript 6、oxlint）+ react-router 7、@tanstack/react-query 5、zustand 5、openapi-fetch、openapi-typescript、vitest + Testing Library；`build.outDir = ../src/Lumio.Platform.App/wwwroot`（不入库）；scripts：`openapi:generate`（先 `dotnet run -- openapi-export`，再 `openapi-typescript`）、`openapi:check`（生成后 `git diff --exit-code` 两个生成物）、`verify`。
+5. `web/`：create-vite react-ts 当前模板版本（React 19、Vite 8、TypeScript 6、oxlint）+ react-router 7、@tanstack/react-query 5、zustand 5、openapi-fetch、openapi-typescript、vitest + Testing Library；`build.outDir = ../src/Lumio.Platform.App/wwwroot`（不入库）；scripts：`openapi:generate`（先 `dotnet run -- openapi-export`，再 `openapi-typescript`）、`openapi:check`（生成后 `git diff --exit-code` 两个生成物）、`verify`。已有 `web/src/styles/` 与 `web/design-preview.html` 必须保留，不得覆盖；`src/main.tsx` 全局 `import "./styles/index.css"`。
 6. `eng/dev-db.sh`：`docker compose up -d postgres`，不可用时 `docker run --name lumio-platform-pg -e POSTGRES_USER=lumio -e POSTGRES_PASSWORD=lumio -e POSTGRES_DB=lumio_platform -p 5432:5432 postgres:17`；再建 `lumio_platform_test`；打印两条 `export` 行。
 7. `verify-contract-mirror.sh`：`git -C <架构仓> show <ORIGIN>:engine/wire/<file>` 与 `contract/<file>` `cmp` 字节一致（架构仓路径经环境变量 `LUMIO_ARCH_REPO` 或 `../LumioGameEngine` 发现，缺失 BLOCKED 报出）。
 8. CI 追加 `dotnet` job（`services: postgres:17`，设 `PLATFORM_TEST_DB_CONNECTION_STRING`）与 `web` job（`pnpm install --frozen-lockfile && pnpm verify`）。
@@ -220,7 +220,7 @@ P1-1。
 
 - 路由：`/`（大厅）、`/login`、`/register`、`/feedback`、`/me`、`/admin/*`（`role === 'admin'` 守卫，否则 403 页）。
 - `session` store：`me` 查询（`GET /api/account/me`，接口在 P3-1 落地前用生成类型占位不调用）与登出。
-- 文案中文；CSS Modules；不引入 UI 框架。
+- 文案中文；CSS Modules；不引入 UI 框架。视觉令牌已在 `web/src/styles/`（[`platform-ui.md`](../knowledge/features/platform-ui.md)），不得另起色板。
 
 ## 验收标准
 
