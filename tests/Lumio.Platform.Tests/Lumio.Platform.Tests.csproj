@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><PlatformProductionProject>false</PlatformProductionProject><OutputType>Exe</OutputType><RootNamespace>Lumio.Platform.Tests</RootNamespace><AssemblyName>Lumio.Platform.Tests</AssemblyName></PropertyGroup>
+  <ItemGroup><PackageReference Include="xunit.v3" /><PackageReference Include="xunit.runner.visualstudio" /><PackageReference Include="Microsoft.NET.Test.Sdk" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Lumio.Platform/Lumio.Platform.csproj" />
+    <ProjectReference Include="../../src/Lumio.Platform.Account/Lumio.Platform.Account.csproj" />
+    <ProjectReference Include="../../src/Lumio.Platform.App/Lumio.Platform.App.csproj" />
+  </ItemGroup>
+  <ItemGroup><None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+</Project>

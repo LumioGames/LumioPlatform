@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: lumio
+      POSTGRES_PASSWORD: lumio
+      POSTGRES_DB: lumio_platform
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lumio"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+  platform:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PLATFORM_DB_CONNECTION_STRING: Host=postgres;Database=lumio_platform;Username=lumio;Password=lumio
+      PLATFORM_LISTEN_URL: http://0.0.0.0:8080
+    ports: ["8080:8080"]

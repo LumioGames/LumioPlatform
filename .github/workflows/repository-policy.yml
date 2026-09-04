@@ -34,5 +34,43 @@ jobs:
           test "$(readlink .claude/skills)" = "../.spec/skills"
           test "$(readlink .agents/skills)" = "../.spec/skills"
 
-  # dotnet build/test（PostgreSQL service container）与 pnpm verify 两个 job 由 P0-1 骨架卡追加；
-  # 在那之前本仓只有文档与规范，没有可构建的代码。
+  dotnet:
+    name: .NET build and test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: lumio
+          POSTGRES_PASSWORD: lumio
+          POSTGRES_DB: lumio_platform_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U lumio"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PLATFORM_TEST_DB_CONNECTION_STRING: Host=127.0.0.1;Port=5432;Database=lumio_platform_test;Username=lumio;Password=lumio
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet restore build.proj --locked-mode
+      - run: dotnet build build.proj -c Release --no-restore
+      - run: dotnet test tests/Lumio.Platform.Tests -c Release --no-build
+
+  web:
+    name: Web verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - run: pnpm -C web install --frozen-lockfile
+      - run: pnpm -C web verify

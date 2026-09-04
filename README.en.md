@@ -49,10 +49,10 @@
 node .spec/tools/spec-lint.mjs && node --test .spec/tools/spec-lint.test.mjs
 ```
 
-Once code lands (from card P0-1 on):
+Run the complete gate for the P0-1 skeleton:
 
 ```bash
-dotnet build build.proj -c Release && dotnet test tests/Lumio.Platform.Tests -c Release --no-build && pnpm -C web verify
+dotnet restore build.proj --locked-mode && dotnet build build.proj -c Release --no-restore && dotnet test tests/Lumio.Platform.Tests -c Release --no-build && pnpm -C web verify
 ```
 
 Tests require `PLATFORM_TEST_DB_CONNECTION_STRING` to point at a reachable PostgreSQL; when it is missing they fail instead of skipping.

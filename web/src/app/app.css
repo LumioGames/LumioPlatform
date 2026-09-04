@@ -1,0 +1,12 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #17212b; background: #f4f6f8; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.shell { max-width: 720px; margin: 0 auto; padding: 12vh 24px; }
+.eyebrow { color: #3478a8; font-size: .75rem; font-weight: 700; letter-spacing: .12em; }
+h1 { margin: 12px 0 32px; font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.1; }
+.health-panel { display: flex; align-items: center; gap: 16px; padding: 20px; background: white; border: 1px solid #dbe2e8; border-radius: 8px; box-shadow: 0 8px 24px #17212b12; }
+.health-panel > div:nth-child(2) { flex: 1; }
+.health-panel p { margin: 6px 0 0; color: #637282; }
+.status-dot { width: 12px; height: 12px; border-radius: 50%; background: #d96a4d; }
+.status-dot.ok { background: #2d9d78; }
+button { border: 1px solid #b6c3cf; background: #fff; border-radius: 6px; padding: 8px 12px; color: #17212b; cursor: pointer; }

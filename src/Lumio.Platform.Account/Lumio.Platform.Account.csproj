@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>Lumio.Platform.Account</RootNamespace><AssemblyName>Lumio.Platform.Account</AssemblyName></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Lumio.Platform/Lumio.Platform.csproj" /></ItemGroup>
+</Project>
