@@ -22,7 +22,7 @@ metadata:
 浏览器 / 未来原生客户端（Steam / iOS / Android）
   ├── HTTPS ──> lumio-platform（Kestrel 单进程）
   │              ├── /                 SPA（大厅 / 注册登录 / 反馈 / 后台，按角色路由）
-  │              ├── /api/*            JSON API（Cookie 会话；platform-port-v1）
+  │              ├── /api/*            JSON API（Cookie；Launch 也接受 WS account-auth Bearer；platform-port-v1）
   │              ├── /account          WS lumio-account-v1（account-port-v1，保持操作兼容并按 ADR-061 演进；Bot 启动器 / 集成考卷 / 工具）
   │              ├── /games/<slug>/    静态游戏页（LumioClient 既有形态）+ contract.json
   │              ├── /openapi/v1.json  API 文档（DTO 真值在 C#）
@@ -96,7 +96,8 @@ LumioPlatform/
 ## 安全与上线门
 
 - Cookie 状态变更启用 CSRF token、严格 Origin / Fetch Metadata；WebSocket `/account` 校验 Origin，限制帧大小、并发连接、空闲时间、发送队列，并在慢消费者超阈值时断开。
-- Admission Ticket 采用 300 秒有界 Bearer 策略，使用 WSS/TLS、受众绑定、单账号单活跃会话与审计；v1 不引入在线 nonce 消费表。Active + Previous 公钥轮换必须可演练，票据不进 URL 或日志。
+- WS `accountAuthCredential` 六元字段为 unbound sentinel，仅可向 Launch 证明账号身份；Launch 接受 Cookie 或该 Bearer（二选一），调用方只提供 game slug，由 allocator 生成全部 claims 并签发 Room-bound `admissionCredential`。Game Server 拒绝 unbound credential。
+- 两类凭证采用 300 秒有界 Bearer 策略，使用 WSS/TLS、Room credential 六元绑定与审计；v1 不引入在线 nonce 消费表，也不宣称离线可强制全局单活跃会话。Active + Previous 公钥轮换必须可演练，票据不进 URL 或日志。
 - 生产 bundle 仅允许同源、第一方、不可变 release；发布记录绑定内容 hash，客户端不得覆盖地址或版本。
 - R-00421 是容量、备份恢复、`kill -9` 重启、慢客户端、Drain、Rollback、密钥轮换和 Soak 的最终门；缺少证据保持 No-Go。
 

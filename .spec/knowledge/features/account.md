@@ -41,11 +41,12 @@ metadata:
 
 ### 端口一：WS `lumio-account-v1`（路径 `/account`）
 
-- 消息形状、失败码、limits、准入凭证格式、Bot 工具凭证、顶号通知：全部照 `account-port-v1.json`，本仓不另写。`AccountProtocolServer` 搬入 `Lumio.Platform.App`，挂在 Kestrel 的 `/account` 路径（同进程同端口）。
+- 消息形状、失败码、limits、Bot 工具凭证、顶号通知与两类凭证格式全部照 `account-port-v1.json`，本仓不另写。`AccountProtocolServer` 搬入 `Lumio.Platform.App`，挂在 Kestrel 的 `/account` 路径（同进程同端口）。
 - **注册策略 profile**（`PLATFORM_REGISTRATION_PROFILE`）：
   - `test`：`login_or_register` 照 ADR-054 对任何合法 loginName 登录即注册（集成考卷、开发）；口令测试档案 `123456` 按契约 `passwordProfile.testProfile`。
   - `production`（默认）：WS 端口只允许 **Bot 命名空间 + 有效工具凭证**注册；普通 loginName 不存在时拒绝 `registration_requires_platform`（`account-port-v1.json` 经 ADR-061 授权新增的失败码，WS `Error` 消息携带）；已存在的人类账号仍可用 loginName + 口令登录并取凭证。生产不得开 `test`。
 - 就绪行与退出码并入平台进程边界（platform.md）；契约里 `process.accountServer` 字段随 ADR-061 更新（`storePath` → `database`）。
+- WS `login_or_register` 成功只签发 `accountAuthCredential`：共享 canonical payload 的六个 allocation 字段固定为 `admissionBinding.unboundSentinel`。它只用于账号认证，不能直接进入任何 Room；Bot、工具与 RM-00011 消费者必须用它作为 Bearer 调 Platform Launch，交换 Room-bound `admissionCredential`。
 
 ### 端口二：HTTP `/api/account/*`（`platform-port-v1.json`）
 
@@ -67,9 +68,11 @@ metadata:
 - 账号端点采用分区限流：按 IP、邮箱/登录标识和账号维度分别限制注册、登录、验证码、反馈与 track，超限统一返回 `429 rate_limited`；阈值仅来自环境变量或集中配置，不在最终门才补。
 - 登录记录：两端口所有登录尝试（成功 / 失败 / 码）写 `login_attempts`。
 
-### 准入凭证签发
+### 两类凭证与签发
 
-格式、签名（LumioBinV1 + LumioSignatureV1 Ed25519）、`keyId`、TTL 300s 照 `account-port-v1.json`；签发点两个：WS `LoginOrRegisterAck` 与 HTTP `POST /api/games/{slug}/launch`（见 lobby-launch.md）。签名载荷必须包含 `accountId`、`loginName`、`serverAudience`、`gameId`、`gameReleaseId`、`contractId`、`roomId`、`allocationId`、`issuedAt`、`expiresAt`、`nonce`。Game Server 逐项校验这些声明。v1 采用有界 Bearer 策略：300 秒 TTL、WSS/TLS、受众绑定、单账号单活跃会话与审计；不引入在线 nonce 消费表，重放风险由上述边界明确接受。私钥只经环境变量注入，Active + Previous 公钥轮换必须可演练。
+- `accountAuthCredential`：由 WS `LoginOrRegisterAck` 签发，六个 allocation 字段均为 unbound sentinel，仅可作为 `Authorization: Bearer` 调用 Platform Launch。Game Server 必须以 `admission_credential_unbound` 拒绝它。
+- `admissionCredential`：仅由 `POST /api/games/{slug}/launch` 签发；调用方只提交 path slug，服务端 allocator 产生 `serverAudience`、`gameId`、`gameReleaseId`、`contractId`、`roomId`、`allocationId`，再与 `accountId`、`loginName`、`issuedAt`、`expiresAt`、`nonce` 一起签名。Game Server 使用自己的受信 allocation registry 逐项校验六元绑定。
+- 两类凭证共享 LumioBinV1 + LumioSignatureV1 Ed25519、`keyId` 和 300 秒 TTL。v1 采用有界 Bearer 策略：WSS/TLS、Room credential 六元绑定与审计；不引入在线 nonce 消费表，也不宣称离线可强制全局单活跃会话。私钥只经环境变量注入，Active + Previous 公钥轮换必须可演练。
 
 ### 安全运维边界
 

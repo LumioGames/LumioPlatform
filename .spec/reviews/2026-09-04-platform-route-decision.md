@@ -9,7 +9,7 @@
 - 技术架构评审：`/Users/cui/Downloads/LumioPlatform_Technical_Architecture_Review_2026-09-04.md`，结论为 Conditional Go / 当前生产 No-Go，要求 Gate 0-5、受众绑定准入、真实 Runtime 网络与恢复证据、容量研究和安全前置。
 - 当前卡片计划：[`../plans/2026-09-04-platform-ms1-cards.md`](../plans/2026-09-04-platform-ms1-cards.md)。
 - 账号权威裁决：架构仓 `.spec/decisions/ADR-061-lumioplatform-repository-and-account-authority.md`，明确 Platform 是唯一账号权威、PostgreSQL 真值并保留 `AccountWorld`。
-- 当前契约基线：架构仓 `origin/main` `c9f017b` 已合入 PR #77（ADR-061、`account-port-v1`、`platform-port-v1`）；评审文档中“仍在 Open PR”的表述已过时，但契约镜像精确 SHA 与漂移 CI 要求保留。
+- 契约基线：架构仓 `origin/main` `c9f017b` 已合入 PR #77，因此评审文档中“仍在 Open PR”的表述已过时；但 `c9f017b` 不含后续 audience-bound / account-auth exchange 扩展。新 Gate-0 source 固定为 `docs/2026-09-04-platform-route` 的 follow-up commit `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`，合入后再记录实际 main merge SHA；镜像精确 SHA 与漂移 CI 要求保留。
 
 ## 当前排期事实
 
@@ -22,7 +22,7 @@
 1. 保留模块化单体、PostgreSQL、Platform / Server / Client 边界、Server 权威和 `AccountWorld`（可从数据库重建，数据库是唯一持久真值）。删除 `AccountWorld` 属于与 ADR-061 冲突的建议，除非 Owner 另立 ADR。
 2. 在 R0 / R-00409 建立 Gate 0，冻结契约治理、镜像 SHA、生成物漂移检查和 Owner 裁决，再进入 P0-1。
 3. 把安全要求放入拥有行为的卡：R-00412（WS Origin、大小、并发、空闲、慢消费者）、R-00414（CSRF、分区限流、HMAC OTP 原子消费、Data Protection keys、session epoch）、R-00416（Audience-bound Launch、WSS、不可变 first-party bundle）、R-00418（访问控制、一次性 CLI bootstrap、session epoch 与审计）。限流不再作为 R-00421 的晚期新增功能。
-4. Admission Ticket 使用 300 秒有界 Bearer 策略，WSS/TLS、audience/game/release/contract/room/allocation 绑定、单账号单活跃会话和审计；v1 不引入在线 nonce 消费表。
+4. 两类凭证都使用 300 秒有界 Bearer 策略：WS `accountAuthCredential` 为 unbound、不可入 Room，只能作为 Bearer 向 Launch 换票；Room `admissionCredential` 绑定 audience/game/release/contract/room/allocation。WSS/TLS 与审计降低暴露风险；v1 不引入在线 nonce 消费表，也不宣称离线可强制全局单活跃会话。
 5. R-00420 只依赖账号、Launch、Client 接入和契约证据，可与反馈 / analytics 并行；拓扑与容量研究并行开展，但必须门控 R-00421。R-00421 负责备份恢复、`kill -9`、Drain、Rollback、Key Rotation、Soak 与容量最终门。
 6. 不在本次变更中创建 target date、release window、owner load 或 WorkItem；依赖和 priority 是当前唯一排期真值。
 
