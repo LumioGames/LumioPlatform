@@ -9,7 +9,7 @@
 - 技术架构评审：`/Users/cui/Downloads/LumioPlatform_Technical_Architecture_Review_2026-09-04.md`，结论为 Conditional Go / 当前生产 No-Go，要求 Gate 0-5、受众绑定准入、真实 Runtime 网络与恢复证据、容量研究和安全前置。
 - 当前卡片计划：[`../plans/2026-09-04-platform-ms1-cards.md`](../plans/2026-09-04-platform-ms1-cards.md)。
 - 账号权威裁决：架构仓 `.spec/decisions/ADR-061-lumioplatform-repository-and-account-authority.md`，明确 Platform 是唯一账号权威、PostgreSQL 真值并保留 `AccountWorld`。
-- 契约基线：架构仓 `origin/main` `c9f017b` 已合入 PR #77，因此评审文档中“仍在 Open PR”的表述已过时；但 `c9f017b` 不含后续 audience-bound / account-auth exchange 扩展。Gate-0 候选内容在 `docs/2026-09-04-platform-route` commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8`；只有合入并可从 `origin/main` 读回后才固定实际 SHA、更新镜像并通过 R0。镜像精确 SHA 与漂移 CI 要求保留。
+- 契约基线：架构仓 `origin/main` `933f755e4074fb4db26bd3c2da100f36aae88660` 已通过 PR #79 合入 audience-bound / account-auth exchange 扩展（source commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8`）；历史 `c9f017b` 仅对应 PR #77，不含该扩展。R0 仍须把 `933f755e4074fb4db26bd3c2da100f36aae88660` 写入 `contract/ORIGIN`、更新镜像并启用漂移 CI 才算通过。
 
 ## 当前排期事实
 

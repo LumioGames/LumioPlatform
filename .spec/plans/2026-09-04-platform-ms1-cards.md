@@ -34,7 +34,7 @@ metadata:
 ## 落单读回（2026-09-04，Owner 授权后由架构仓主会话写入并逐对象 GET 核对；bundle `wf-20260904-platform-ms1`，蓝图 `workflow-plan: platform-ms1/r1`）
 
 - 需求室：**RM-00012**「LumioPlatform · 游戏平台 MS-1（账号权威 / 大厅 / 反馈 / 后台）」（`01a06b90-0dcc-7b3d-b730-f891572423bc`，module `LumioPlatform`）。
-- 接口历史基线：架构仓 `origin/main` `c9f017b`（PR #77 已合入），但它**不含** audience-bound / account-auth exchange 的 Gate-0 扩展。扩展候选源是架构仓分支 `docs/2026-09-04-platform-route` 的 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8`；R0 只有在该内容合入并可从架构仓 `origin/main` 读回后才通过，并把实际可达 SHA 写入 `contract/ORIGIN`。本计划不把未合入分支描述为当前 main。
+- 接口冻结基线：架构仓 `origin/main` `933f755e4074fb4db26bd3c2da100f36aae88660`（PR #79，包含 source commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8`）已合入 audience-bound / account-auth exchange 的 Gate-0 扩展；历史 `c9f017b` 不含该扩展。R0 仍须把实际可达 SHA 写入 `contract/ORIGIN` 并完成镜像/漂移 CI 才算通过。
 - 验收项类型「需求验收」/ 初始状态「未提交」（`not_started`），`sourceKind=ai`、`sourceRef=workflow-plan: platform-ms1/r1/<临时号>`；18 条需求引用边经 `bindRequirementReference` 写入并由 `GET /requirement-graph?roomId=` 读回（`truncated=false`）。
 - 未归属里程碑、未指定 owner（API 取创建人）。卡正文里前置卡以「displayKey（临时号）」标注；下游前向引用仍用临时号，对照本表。
 
@@ -124,11 +124,11 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 
 ## 涉及范围
 
-架构仓 `docs/2026-09-04-platform-route` 的 Gate-0 候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 及其合入后可从 `origin/main` 读回的实际 SHA、本仓 `contract/ORIGIN` 与契约镜像、`engine/wire/account-port-v1.json` / `platform-port-v1.json` 的生成摘要、镜像漂移 CI、ADR-061 与本计划的裁决记录。
+架构仓 `origin/main` Gate-0 merge commit `933f755e4074fb4db26bd3c2da100f36aae88660`、本仓 `contract/ORIGIN` 与契约镜像、`engine/wire/account-port-v1.json` / `platform-port-v1.json` 的生成摘要、镜像漂移 CI、ADR-061 与本计划的裁决记录。
 
 ## 验收标准
 
-- [ ] ADR-061 与两份 v1 扩展契约包含候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 的完整内容，已合入并可从架构仓 `origin/main` 的实际 SHA 读回；本仓 ORIGIN 和镜像与该可达 revision 字节一致。
+- [ ] ADR-061 与两份 v1 扩展契约已从架构仓 `origin/main` `933f755e4074fb4db26bd3c2da100f36aae88660` 读回；本仓 ORIGIN 和镜像与该 revision 字节一致。
 - [ ] Admission Ticket 的 audience / game / release / contract / room / allocation 字段及 300 秒 Bearer 重放边界由 Owner 明确；缺口不得由实现仓自行绕过。
 - [ ] CI 能在契约或生成物漂移时失败；Owner、版本、审计入口和本计划裁决记录可追溯。
 
@@ -146,7 +146,7 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 # P0-1 · [LumioPlatform] 仓库骨架：.NET 三项目 + 测试、web/ 脚手架、契约镜像、本地数据库脚本、CI
 
 - wave: 0 · priority: P0 · risk: medium
-- 前置：Gate 0 / R0 通过；架构仓 ADR-061 与两份扩展契约包含候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 的完整内容，已合入且可从 `origin/main` 读回（不得使用历史 `c9f017b`）。本卡只把该实际可达 SHA 写入 `contract/ORIGIN`，并由 CI 做镜像漂移检查。
+- 前置：Gate 0 / R0 通过；架构仓 ADR-061 与两份扩展契约已在 `origin/main` `933f755e4074fb4db26bd3c2da100f36aae88660` 可读回（不得使用历史 `c9f017b`）。本卡把该 SHA 写入 `contract/ORIGIN`，并由 CI 做镜像漂移检查。
 
 ## 涉及范围
 
@@ -386,7 +386,7 @@ P2-1、P2-2。
 # P3-3 · [LumioClient] 浏览器游戏页改为经平台 launch 端口取地址与凭证
 
 - wave: 3 · priority: P1 · risk: medium
-- 前置：Gate 0 / R0 通过，架构仓 `platform-port-v1.json` 已包含候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 的完整内容并可从 `origin/main` 实际 SHA 读回（不得使用历史 `c9f017b`）。本卡不依赖 P3-2 合入，但不得绕过 Gate 0；联调在 P5-1。
+- 前置：Gate 0 / R0 通过，架构仓 `platform-port-v1.json` 已从 `origin/main` `933f755e4074fb4db26bd3c2da100f36aae88660` 读回（不得使用历史 `c9f017b`）。本卡不依赖 P3-2 合入，但不得绕过 Gate 0；联调在 P5-1。
 
 ## 涉及范围
 
