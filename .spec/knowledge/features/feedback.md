@@ -17,7 +17,8 @@ metadata:
 ## 设计
 
 - `feedbacks` 表：`id`、`type`（`bug` / `suggestion`）、`title`（≤ 80）、`body`（≤ 4000）、`game_slug?`、`page_url?`、`contact?`（≤ 120，可为空）、`account_id?`（登录用户自动带上）、`status`（`new` / `triaged` / `closed`）、`admin_note?`、`created_at` / `updated_at`。
-- `POST /api/feedback`（可匿名；登录则带 `accountId`）→ 201 `{ id }`；失败码 `invalid_request`、`feedback_too_long`。暴露公网前加限流（P5-2）。
+- `POST /api/feedback`（可匿名；登录则带 `accountId`）→ 201 `{ id }`；失败码 `invalid_request`、`feedback_too_long`。按 IP / 账号分区限流，超限返回 `429 rate_limited`；这是反馈端点当前 DoD，不延后到 P5-2。
+- Cookie 状态变更要求 CSRF token、严格 `Origin` / Fetch Metadata；跨站反馈提交被拒。
 - `GET /api/feedback/mine`（会话）→ 本人反馈列表与状态。
 - 社群外链存 `platform_settings`（键值表：`community.feishu_url`、`community.qq_url`、`community.qq_group_number`），`GET /api/settings/public` 返回给前端；后台可改（admin-analytics.md）。大厅与反馈页显示「加入飞书群 / 加入 QQ 群」按钮。
 - 后台：`GET /api/admin/feedback?status=&type=&gameSlug=`、`PUT /api/admin/feedback/{id}`（`status`、`adminNote`）；状态变更写 `audit_log`。

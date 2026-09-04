@@ -19,7 +19,8 @@ Owner 要看：用户注册信息、活跃度、运营埋点、反馈、登录�
 ### 管理员
 
 - `accounts.role ∈ { player, admin }`；`/api/admin/*` 全部 `RequireRole("admin")`，前端按 `me.role` 守卫 `/admin`。
-- 首个管理员：启动时若 `PLATFORM_BOOTSTRAP_ADMIN_EMAIL` 指向的账号存在且为 `player`，提升为 `admin` 并写 `audit_log`（幂等；不存在只告警不中断）。无种子账号，生产不得有 dev-only 后门。
+- 首个管理员：仅通过一次性 `lumio-platform admin bootstrap --email <address>` 命令提升为 `admin` 并写 `audit_log`（幂等；不存在时命令失败且不修改数据）。启动时不读取 `PLATFORM_BOOTSTRAP_ADMIN_EMAIL`，生产不得有 dev-only 提权后门。
+- 所有管理员 Cookie 状态变更要求 CSRF token、严格 `Origin` / Fetch Metadata；管理员端点按 IP / 账号分区限流，超限返回 `429 rate_limited`。
 - 管理员的写操作（封禁 / 解封 / 改角色 / 改游戏目录 / 改设置 / 处理反馈）全部写 `audit_log(id, actor_account_id, action, target, before?, after?, at)`。
 
 ### 用户与登录记录
@@ -37,6 +38,7 @@ Owner 要看：用户注册信息、活跃度、运营埋点、反馈、登录�
 
 - `events` 表：`id`、`name`（`^[a-z][a-z0-9_.]{1,63}$`）、`props`（jsonb，≤ 4 KB）、`account_id?`、`anon_id`（匿名 Cookie，首访生成）、`client_ts`、`received_at`、`page_url?`、`user_agent?`。
 - `POST /api/track`：批量 ≤ 50 条 `{ name, props?, clientTs }`；失败码 `invalid_event`、`batch_too_large`。前端在路由切换、大厅曝光、点击启动、提交反馈处上报。
+- `/api/track` 按 IP / 账号分区限流；限流是埋点端点的当前 DoD，不延后到 P5-2。
 - 服务器侧直接落表的事件：`account.registered`、`account.login`（含 port）、`game.launched`（gameSlug、roomId）、`feedback.submitted`。
 - 看板 `GET /api/admin/stats?from=&to=`：DAU / WAU（按 `account_id` 去重）、注册数、各游戏启动次数、反馈数（按状态）。全部 SQL 聚合；量大再谈物化视图（信号：单次查询 > 2s）。
 - 保留策略：v1 不删；需要时另立决策。
