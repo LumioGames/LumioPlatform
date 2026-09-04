@@ -63,3 +63,14 @@ test('published lobby game exposes a launch action', () => {
   expect(screen.getByRole('button', { name: '开始游戏' })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Roadmap' })).toBeInTheDocument();
 });
+
+test('admin surfaces expose operational tables and settings', () => {
+  useSession.getState().setUser(admin);
+  renderAt('/admin/users');
+  expect(screen.getByRole('heading', { name: '用户管理' })).toBeInTheDocument();
+  expect(screen.getByText('lumio_player')).toBeInTheDocument();
+  cleanup();
+  renderAt('/admin/settings');
+  expect(screen.getByRole('heading', { name: '平台设置' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '保存设置' })).toBeInTheDocument();
+});
