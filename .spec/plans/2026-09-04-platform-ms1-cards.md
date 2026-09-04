@@ -38,10 +38,10 @@ metadata:
 - 验收项类型「需求验收」/ 初始状态「未提交」（`not_started`），`sourceKind=ai`、`sourceRef=workflow-plan: platform-ms1/r1/<临时号>`；18 条需求引用边经 `bindRequirementReference` 写入并由 `GET /requirement-graph?roomId=` 读回（`truncated=false`）。
 - 未归属里程碑、未指定 owner（API 取创建人）。卡正文里前置卡以「displayKey（临时号）」标注；下游前向引用仍用临时号，对照本表。
 
-| 临时号 | displayKey | UUID | wave | 仓 | 状态 | 验收项 |
+| 临时号 | displayKey | UUID | wave | 仓 | 线上状态（观察值） | 线上验收项数（观察值） |
 |---|---|---|---|---|---|---|
 | R0 / Gate 0 | R-00409 | `01a06b90-1f4f-7b1a-9d04-648fd4553014` | Gate 0 | LumioPlatform | backlog | 0 |
-| P0-1 | R-00410 | `01a06b90-3090-7c9e-9229-af14854726c7` | 0 | LumioPlatform | backlog | 9 |
+| P0-1 | R-00410 | `01a06b90-3090-7c9e-9229-af14854726c7` | 0 | LumioPlatform | in_progress (observed online) | 9 |
 | P1-1 | R-00411 | `01a06b90-42d6-72ad-a88b-272a47d62c1f` | 1 | LumioPlatform | backlog | 5 |
 | P2-1 | R-00412 | `01a06b90-556a-73b5-b134-c60f3f54f6e8` | 2 | LumioPlatform | backlog | 8 |
 | P2-2 | R-00413 | `01a06b90-5d67-7b1f-8d0c-2fcc080b96fc` | 2 | LumioPlatform | backlog | 4 |
@@ -53,6 +53,8 @@ metadata:
 | P4-3 | R-00419 | `01a06b90-8bb8-78ad-8e24-807d323d577e` | 4 | LumioPlatform | backlog | 4 |
 | P5-1 | R-00420 | `01a06b90-9dab-70c1-8193-15e5fbd1e59c` | 5a | LumioGame + LumioServer | backlog | 3 |
 | P5-2 | R-00421 | `01a06b90-9f99-77a3-a5a9-6ab40816933c` | 5b | LumioPlatform | backlog | 5 |
+
+表内状态是只读观察到的 Workflow 线上状态；本次不写 Workflow。除 R-00410 外，线上卡仍为 `backlog`；本仓分支中的文档 readiness 不等于线上状态。
 
 派活提示词与 wave 调度按架构仓 `LumioGameEngine/.spec/skills/cross-repo-delivery/SKILL.md`（本仓无该技能，主会话在架构仓执行）：Gate 0（R-00409）先冻结契约、治理和镜像基线；其后 W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
 
@@ -67,7 +69,7 @@ W1  P1-1 数据模型与首个迁移（LumioPlatform）
      ↓
 W2  P2-1 账号域搬入 + WS 安全边界 + Postgres 存储（LumioPlatform）   ∥   P2-2 SPA 骨架（LumioPlatform web/）
      ↓
-Gate 1 / W3  P3-1 HTTP 账号安全纵切   ∥   P3-2 安全大厅与启动（Audience-bound Launch）   ∥   P3-3 游戏页接 launch（LumioClient）
+Gate 1 / W3  P3-1 HTTP 账号安全纵切   ∥   P3-2 安全大厅与启动（Audience-bound Launch）   ∥   P3-3 游戏页接 launch（LumioClient；Gate 0 / frozen contract prerequisite）
      ↓
 Gate 2 / W4  P4-1 反馈与反馈端点限流   ∥   P4-2 后台访问控制 / 一次性 bootstrap / Session Epoch   ∥   P4-3 埋点与看板
 
@@ -196,6 +198,7 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 ## 怎么做（表与列在 `features/account.md`、`lobby-launch.md`、`feedback.md`、`admin-analytics.md`）
 
 - 表：`accounts`、`account_credentials`、`email_verifications`、`login_attempts`、`games`、`feedbacks`、`events`、`platform_settings`、`audit_log`。命名 snake_case，时间 `timestamptz`（UTC），`accounts.uid` 序列从 100000 起，`props` 为 `jsonb`。
+- `accounts.security_version` 是全局会话失效的 epoch 源（写入 principal 的 `session_epoch` claim）；`email_verifications` 必须包含 `challenge_id`、`code_hmac`、`pepper_version`、`expires_at`、`attempts`、`consumed_at`，并以邮箱维度建立唯一 active challenge 约束/迁移。
 - 唯一索引：`accounts.account_id`、`accounts.uid`、`accounts.login_name`（大小写敏感）、`accounts.email`（小写归一后唯一，可空）、`games.slug`、`platform_settings.key`。
 - 一个迁移 `InitialPlatformSchema`；`dotnet ef migrations add` 生成，不手改。
 - 实体只做数据形状，不带业务方法；账号域行为在 P2-1。
@@ -205,6 +208,7 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 - [ ] 空库 `MigrateAsync` 成功且再次执行幂等（测试）。
 - [ ] 唯一约束测试：重复 `login_name` / `email` / `uid` / `slug` 各一条插入失败（`DbUpdateException`）。
 - [ ] `uid` 首条为 100000 且递增。
+- [ ] 迁移测试覆盖 `security_version/session_epoch`、challengeId、HMAC code material / pepper version、consumedAt 与单邮箱唯一 active challenge；并验证旧 challenge 在原子消费后不可再次使用。
 - [ ] 迁移文件与模型同一提交；`dotnet ef migrations has-pending-model-changes` 为无。
 - [ ] 收口门槛全绿。
 
@@ -215,7 +219,7 @@ P0-1。
 ## 接口
 
 - Consumes：`PlatformDbContext`（P0-1）。
-- Produces：实体类型 `Account { long Id; string AccountId; long Uid; string LoginName; string? Email; DateTime? EmailVerifiedAt; int AvatarId; string Role; string Status; DateTime CreatedAt; DateTime? LastLoginAt }`、`AccountCredential { long AccountId; string Argon2idHash; DateTime UpdatedAt }`、`EmailVerification`、`LoginAttempt`、`Game`、`Feedback`、`TrackedEvent`、`PlatformSetting`、`AuditLogEntry`；`DbSet<T>` 同名。
+- Produces：实体类型 `Account { long Id; string AccountId; long Uid; string LoginName; string? Email; DateTime? EmailVerifiedAt; int AvatarId; string Role; string Status; long SecurityVersion; DateTime CreatedAt; DateTime? LastLoginAt }`、`AccountCredential { long AccountId; string Argon2idHash; DateTime UpdatedAt }`、`EmailVerification { string ChallengeId; string Email; string CodeHmac; int PepperVersion; DateTime ExpiresAt; int Attempts; DateTime? ConsumedAt; DateTime CreatedAt }`、`LoginAttempt`、`Game`、`Feedback`、`TrackedEvent`、`PlatformSetting`、`AuditLogEntry`；`DbSet<T>` 同名。
 
 ---
 
@@ -256,7 +260,7 @@ P1-1。
 ## 接口
 
 - Consumes：P1-1 实体与 `PlatformDbContext`。
-- Produces：`AccountRuntime`（`LoginOrRegisterAsync(LoginOrRegisterRequest) → LoginOrRegisterOutcome`；`RegisterWithEmailAsync(email, loginName, password) → Account`；`VerifyPasswordAsync(email | loginName, password) → Account | wrong_password`；`IssueAdmissionCredential(Account, RoomEndpoint) → (credential, expiresAt)`；`SetAvatarAsync` / `BanAsync` / `UnbanAsync` / `SetRoleAsync`）；`AccountQueries`（按 accountId / uid / email / loginName 读投影）。
+- Produces：`AccountRuntime`（`LoginOrRegisterAsync(LoginOrRegisterRequest) → LoginOrRegisterOutcome`；`RegisterWithEmailAsync(email, loginName, password) → Account`；`VerifyPasswordAsync(email | loginName, password) → Account | wrong_password`；`IssueAdmissionCredential(Account, AdmissionAllocationClaims) → (credential, expiresAt)`；`SetAvatarAsync` / `BanAsync` / `UnbanAsync` / `SetRoleAsync`）；`AccountQueries`（按 accountId / uid / email / loginName 读投影）。`AdmissionAllocationClaims` 是架构仓 Wire Contract 定义的中性标量值（audience、game、release、contract、room、allocation），不依赖下游 `RoomEndpoint` 类型；`AccountRuntime` 自行写入 account、issuedAt、expiresAt 与 nonce，调用者不能覆盖。
 
 ---
 
@@ -365,7 +369,7 @@ P2-1、P2-2。
 
 ## 接口
 
-- Consumes：`AccountRuntime.IssueAdmissionCredential`。
+- Consumes：`AccountRuntime.IssueAdmissionCredential(Account, AdmissionAllocationClaims)`；P3-2 仅将受信 `RoomEndpoint` 的 audience / game / release / contract / room / allocation 映射为 claims，不能传入 account、issuedAt、expiresAt 或 nonce。
 - Produces：`IRoomAllocator.AllocateAsync(Game, AccountId, ct) → RoomEndpoint(WsUrl, Subprotocol, ContractId, ServerAudience, GameId, GameReleaseId, RoomId, AllocationId, LeaseExpiresAt)`；`/api/games/*`。
 
 ---
@@ -374,7 +378,7 @@ P2-1、P2-2。
 # P3-3 · [LumioClient] 浏览器游戏页改为经平台 launch 端口取地址与凭证
 
 - wave: 3 · priority: P1 · risk: medium
-- 前置：架构仓 `platform-port-v1.json` 在 `origin/main`（本卡不依赖 P3-2 合入，按契约先行；联调在 P5-1）。
+- 前置：Gate 0 / R0 通过，架构仓 `platform-port-v1.json` 已冻结在 `origin/main` `c9f017b`（本卡不依赖 P3-2 合入，但不得绕过 Gate 0；联调在 P5-1）。
 
 ## 涉及范围
 
@@ -389,11 +393,11 @@ P2-1、P2-2。
 
 ## 依赖
 
-无仓内前置（契约先行）。
+Gate 0 / R0；无其他仓内前置（冻结契约先行）。
 
 ## 接口
 
-- Consumes：`platform-port-v1.json` `launch` 应答形状。
+- Consumes：Gate 0 冻结的 `platform-port-v1.json` `launch` 应答形状。客户端只消费服务端 launch 应答，不构造、提供或覆盖 allocation claims。
 
 ---
 
@@ -473,24 +477,31 @@ P3-1、P3-2。
 ---
 
 <!-- card:P5-1 -->
-# P5-1 · [LumioGame + LumioServer] 集成考卷指向平台账号端口；退役 `LumioServer/account-server/`
+# P5-1 · [LumioGame + LumioServer] Audience-bound 验票与平台握手集成；退役 `LumioServer/account-server/`
 
 - wave: 5a · priority: P0 · risk: high
-- 前置：P2-1、P3-2、P3-3 合入并 push；架构仓 ADR-061 退役条件（平台过 account-port-v1 全部用例）已由 P2-1 证据满足。
+- 前置：P2-1、P3-2、P3-3 合入并 push；架构仓 ADR-061 退役条件须在本卡由跨仓证据满足，P2-1 当前 pending 不视为已满足。
 
 ## 涉及范围
 
-`LumioGame/integration/entity-chat/`（`launcher.mjs` 起 `lumio-platform` 进程（需 `PLATFORM_DB_CONNECTION_STRING`，CI 加 Postgres service）、解析 `PLATFORM_READY`、`account-client.mjs` 连 `/account`）；`LumioServer/account-server/`（整目录删除）、`LumioServer` README / `.spec` 中账号服条目、`LumioServer/.github/workflows/repository-policy.yml` 的 account-server job。
+`LumioGame/integration/entity-chat/`（`launcher.mjs` 起 `lumio-platform` 进程（需 `PLATFORM_DB_CONNECTION_STRING`，CI 加 Postgres service）、解析 `PLATFORM_READY`、`account-client.mjs` 连 `/account`）；`LumioServer` 的 `verify_admission` API/实现、Audience-bound claims 校验与契约/负例测试（错误 audience、game、release、contract、room、allocation 均拒绝）；`LumioServer/account-server/`（整目录删除）、`LumioServer` README / `.spec` 中账号服条目、`LumioServer/.github/workflows/repository-policy.yml` 的 account-server job。
 
 ## 验收标准
 
 - [ ] RM-00011 集成考卷（R4-09 口径）在平台账号端口上全绿，证据日志含平台 `PLATFORM_READY` 行。
+- [ ] `LumioServer.verify_admission` 只接受服务端当前 allocation context 与票据 claims 全部匹配的凭证；错误 audience / game / release / contract / room / allocation 各有同名负例测试并拒绝，客户端不能提供或覆盖可信 context。
+- [ ] 端到端日志证明 allocation context 由 Platform allocator / Game Server 配置产生并传递，凭证不进 URL 或日志。
 - [ ] `LumioServer` 仓 `grep -r account-server` 零命中；CI 绿。
 - [ ] 两仓收口门槛全绿；证据引用已 push 的 `origin/main` 提交。
 
 ## 依赖
 
 P2-1、P3-2、P3-3。
+
+## 接口
+
+- Consumes：Gate 0 冻结的 Admission Ticket claims、Platform allocator 返回的受信 `AllocationContext` 与 Game Server 自身加载的匹配 context；客户端输入仅限 opaque ticket。
+- Produces：`verify_admission(ticket, trustedContext)` API / 实现 / 负例测试和跨仓握手证据；任何 audience / game / release / contract / room / allocation 不匹配均拒绝，客户端不能提供 trusted context。
 
 ---
 

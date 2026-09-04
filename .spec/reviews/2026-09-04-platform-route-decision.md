@@ -28,4 +28,4 @@
 
 ## 结果
 
-平台继续保持 Conditional Go / No-Go，直到 Gate 0-5 的证据完整。该记录与四份 living feature 文档、MS-1 卡片计划一起作为后续实现与审查的决策依据。
+平台继续保持 Conditional Go / No-Go，直到 Gate 0-5 的证据完整。该记录与相关 living feature 文档、MS-1 卡片计划一起作为后续实现与审查的决策依据。

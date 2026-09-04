@@ -27,7 +27,7 @@ metadata:
   │              ├── /games/<slug>/    静态游戏页（LumioClient 既有形态）+ contract.json
   │              ├── /openapi/v1.json  API 文档（DTO 真值在 C#）
   │              └── PostgreSQL        账号 / 凭证哈希 / 登录记录 / 游戏目录 / 反馈 / 埋点 / 设置 / 审计
-  └── WSS ────> Game Server（LumioServer；verify_admission 离线验票，逐项校验受众 / 游戏 / release / 房间）
+  └── WSS ────> Game Server（LumioServer；verify_admission 离线验票，逐项校验受众 / 游戏 / release / contract / 房间 / allocation）
 ```
 
 四块设计各一份文档：[账号域](account.md)、[大厅与启动](lobby-launch.md)、[反馈](feedback.md)、[后台与埋点](admin-analytics.md)。

@@ -33,10 +33,11 @@ metadata:
 | `avatarId` | `accounts.avatar_id` | 系统默认头像集编号（1..N，N 由 `web/public/avatars/` 资产数决定，默认 12）；不支持上传 |
 | `role` | `accounts.role` | `player` / `admin` |
 | `status` | `accounts.status` | `active` / `banned`（封禁后两端口登录均拒 `account_banned`，已发凭证到期自然失效） |
+| `securityVersion` | `accounts.security_version` | 会话 epoch 真值；封禁、改角色、改密或安全事件时递增，旧 principal 立即失效 |
 | `createdAt` / `lastLoginAt` | `accounts.*` | UTC |
 | 口令哈希 | `account_credentials(account_id, argon2id_hash, updated_at)` | Argon2id（RFC 9106），每账号唯一盐；与身份分表 |
 
-其余表：`email_verifications(email, code_hash, expires_at, attempts, created_at)`、`login_attempts(id, account_id?, identifier, port ws|http, outcome, error_code?, ip, user_agent, at)`。
+其余表：`email_verifications(email, challenge_id, code_hmac, pepper_version, expires_at, attempts, consumed_at, created_at)`（`code_hmac` 是服务端 pepper HMAC 输出，不是裸 SHA-256；单邮箱仅一个 active challenge）、`login_attempts(id, account_id?, identifier, port ws|http, outcome, error_code?, ip, user_agent, at)`。
 
 ### 端口一：WS `lumio-account-v1`（路径 `/account`）
 
