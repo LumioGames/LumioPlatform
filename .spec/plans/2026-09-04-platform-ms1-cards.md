@@ -12,6 +12,31 @@ metadata:
 - 分工原则：卡片写清上下文、怎么决策的、具体改什么；执行者只干活，架构设计在文档。每张卡自包含。
 - 卡格式照 [`tasks/README.md`](../tasks/README.md)：目标 / 涉及范围（文件集）/ 验收标准 / 依赖 / 接口（Consumes / Produces）。落 Workflow 时 `module = LumioPlatform`（跨仓卡写目标仓名），标题 `[仓名] 成果描述`。
 
+## 落单读回（2026-09-04，Owner 授权后由架构仓主会话写入并逐对象 GET 核对；bundle `wf-20260904-platform-ms1`，蓝图 `workflow-plan: platform-ms1/r1`）
+
+- 需求室：**RM-00012**「LumioPlatform · 游戏平台 MS-1（账号权威 / 大厅 / 反馈 / 后台）」（`01a06b90-0dcc-7b3d-b730-f891572423bc`，module `LumioPlatform`）。
+- 接口冻结物：架构仓 `origin/main` `c9f017b`（PR #77：ADR-061 + `platform-port-v1.json` + `account-port-v1.json` 修订）。
+- 验收项类型「需求验收」/ 初始状态「未提交」（`not_started`），`sourceKind=ai`、`sourceRef=workflow-plan: platform-ms1/r1/<临时号>`；18 条需求引用边经 `bindRequirementReference` 写入并由 `GET /requirement-graph?roomId=` 读回（`truncated=false`）。
+- 未归属里程碑、未指定 owner（API 取创建人）。卡正文里前置卡以「displayKey（临时号）」标注；下游前向引用仍用临时号，对照本表。
+
+| 临时号 | displayKey | UUID | wave | 仓 | 状态 | 验收项 |
+|---|---|---|---|---|---|---|
+| R0 | R-00409 | `01a06b90-1f4f-7b1a-9d04-648fd4553014` | — | LumioPlatform | backlog | 0 |
+| P0-1 | R-00410 | `01a06b90-3090-7c9e-9229-af14854726c7` | 0 | LumioPlatform | backlog | 9 |
+| P1-1 | R-00411 | `01a06b90-42d6-72ad-a88b-272a47d62c1f` | 1 | LumioPlatform | backlog | 5 |
+| P2-1 | R-00412 | `01a06b90-556a-73b5-b134-c60f3f54f6e8` | 2 | LumioPlatform | backlog | 8 |
+| P2-2 | R-00413 | `01a06b90-5d67-7b1f-8d0c-2fcc080b96fc` | 2 | LumioPlatform | backlog | 4 |
+| P3-1 | R-00414 | `01a06b90-7221-73b5-92d0-346ec484b8e5` | 3 | LumioPlatform | backlog | 7 |
+| P3-2 | R-00416 | `01a06b90-7362-710a-b138-d2fb16cbc7e5` | 3 | LumioPlatform | backlog | 5 |
+| P3-3 | R-00415 | `01a06b90-72fb-7eda-80a7-7fe9d4fe3372` | 3 | LumioClient | backlog | 4 |
+| P4-1 | R-00417 | `01a06b90-886d-7bcd-b72e-e0c82acbca72` | 4 | LumioPlatform | backlog | 5 |
+| P4-2 | R-00418 | `01a06b90-89d8-7eb9-aaa3-2cf7f028fd8e` | 4 | LumioPlatform | backlog | 6 |
+| P4-3 | R-00419 | `01a06b90-8bb8-78ad-8e24-807d323d577e` | 4 | LumioPlatform | backlog | 4 |
+| P5-1 | R-00420 | `01a06b90-9dab-70c1-8193-15e5fbd1e59c` | 5 | LumioGame + LumioServer | backlog | 3 |
+| P5-2 | R-00421 | `01a06b90-9f99-77a3-a5a9-6ab40816933c` | 5 | LumioPlatform | backlog | 5 |
+
+派活提示词与 wave 调度按 [`cross-repo-delivery`](../skills/cross-repo-delivery/SKILL.md)：W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
+
 ## 依赖 DAG（按 wave）
 
 ```text
