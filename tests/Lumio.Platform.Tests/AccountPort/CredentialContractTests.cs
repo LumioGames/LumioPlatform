@@ -27,7 +27,10 @@ public sealed class CredentialContractTests
         var claims = new AdmissionAllocationClaims("game-server", "hello", "hello-1", "lumio.hello-wire.v1", "room-1", "alloc-1");
         var credential = AdmissionCredential.IssueBound(keys.Seed, 2, "acct_" + new string('b', 32), "alice", false, clock.UnixSeconds, clock.UnixSeconds + 300, claims);
 
-        var accepted = Assert.IsType<AdmissionVerifyOutcome.Accepted>(AdmissionCredential.Verify(credential, 2, keys.PublicKey, clock));
+        var rejected = Assert.IsType<AdmissionVerifyOutcome.Rejected>(AdmissionCredential.Verify(credential, 2, keys.PublicKey, clock));
+        Assert.Equal(AccountErrorCode.AdmissionBindingMismatch, rejected.Code);
+
+        var accepted = Assert.IsType<AdmissionVerifyOutcome.Accepted>(AdmissionCredential.Verify(credential, 2, keys.PublicKey, clock, claims));
         Assert.Equal(claims, accepted.Payload.AllocationClaims);
         Assert.False(accepted.Payload.IsUnbound);
     }

@@ -100,4 +100,47 @@ public sealed class AccountProtocolLimitTests
 
         Assert.Equal(expected, actual);
     }
+
+    [Fact]
+    public void account_startup_configuration_requires_both_trust_keys()
+    {
+        static string? Missing(string name) => name switch
+        {
+            "LUMIO_ACCOUNT_ADMISSION_PRIVATE_KEY_HEX" => null,
+            "LUMIO_ACCOUNT_BOT_TOOL_PUBLIC_KEY_HEX" => new string('0', Ed25519Keys.PublicKeyLength * 2),
+            _ => null,
+        };
+
+        Assert.Throws<InvalidDataException>(() => PlatformHost.ReadAccountConfiguration(Missing));
+
+        static string? MissingBot(string name) => name switch
+        {
+            "LUMIO_ACCOUNT_ADMISSION_PRIVATE_KEY_HEX" => new string('1', Ed25519Keys.SeedLength * 2),
+            "LUMIO_ACCOUNT_BOT_TOOL_PUBLIC_KEY_HEX" => null,
+            _ => null,
+        };
+
+        Assert.Throws<InvalidDataException>(() => PlatformHost.ReadAccountConfiguration(MissingBot));
+    }
+
+    [Fact]
+    public void account_rate_limits_bind_from_explicit_environment_names()
+    {
+        var values = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["PLATFORM_ACCOUNT_RATE_LIMIT_WINDOW_SECONDS"] = "17",
+            ["PLATFORM_ACCOUNT_RATE_LIMIT_MAX_REQUESTS_PER_IP"] = "11",
+            ["PLATFORM_ACCOUNT_RATE_LIMIT_MAX_REQUESTS_PER_LOGIN_NAME"] = "13",
+            ["PLATFORM_ACCOUNT_RATE_LIMIT_MAX_REQUESTS_PER_ACCOUNT"] = "19",
+            ["PLATFORM_ACCOUNT_RATE_LIMIT_MAX_TRACKED_KEYS"] = "23",
+        };
+
+        var options = PlatformHost.ReadRateLimitOptions(name => values.TryGetValue(name, out var value) ? value : null);
+
+        Assert.Equal(17, options.WindowSeconds);
+        Assert.Equal(11, options.MaxRequestsPerIp);
+        Assert.Equal(13, options.MaxRequestsPerLoginName);
+        Assert.Equal(19, options.MaxRequestsPerAccount);
+        Assert.Equal(23, options.MaxTrackedKeys);
+    }
 }

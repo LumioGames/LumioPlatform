@@ -153,9 +153,6 @@ public sealed class AccountRuntime : IDisposable
         return principal;
     }
 
-    public AdmissionVerifyOutcome VerifyAdmission(string admissionCredential)
-        => AdmissionCredential.Verify(admissionCredential, options.AdmissionKeyId, AdmissionPublicKey, options.Clock);
-
     public AdmissionVerifyOutcome VerifyAdmission(string admissionCredential, AdmissionAllocationClaims allocationContext)
         => AdmissionCredential.Verify(admissionCredential, options.AdmissionKeyId, AdmissionPublicKey, options.Clock, allocationContext);
 

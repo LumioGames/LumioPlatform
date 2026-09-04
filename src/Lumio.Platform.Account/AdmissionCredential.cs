@@ -77,8 +77,9 @@ public static class AdmissionCredential
         => Verify(wire, expectedKeyId, publicKey, clock, null);
 
     /// <summary>
-    /// Verifies a room-bound credential and, when supplied, compares every
-    /// allocation field with the trusted server-owned allocation context.
+    /// Verifies a room-bound credential and compares every allocation field
+    /// with the trusted server-owned allocation context. A missing context
+    /// is rejected so callers cannot accidentally admit an unscoped ticket.
     /// </summary>
     public static AdmissionVerifyOutcome Verify(
         string wire,
@@ -98,8 +99,9 @@ public static class AdmissionCredential
             return new AdmissionVerifyOutcome.Rejected(AccountErrorCode.AdmissionCredentialUnbound);
         if (!payload.AllocationClaims.IsBound)
             return new AdmissionVerifyOutcome.Rejected(AccountErrorCode.AdmissionBindingMismatch);
-        if (allocationContext is { } trusted
-            && (!trusted.IsBound || !payload.AllocationClaims.Equals(trusted)))
+        if (allocationContext is not { } trusted
+            || !trusted.IsBound
+            || !payload.AllocationClaims.Equals(trusted))
             return new AdmissionVerifyOutcome.Rejected(AccountErrorCode.AdmissionBindingMismatch);
         if (LoginNameRules.IsBotNamespace(payload.LoginName) && !payload.BotToolContext)
             return new AdmissionVerifyOutcome.Rejected(AccountErrorCode.BotNamespaceAdmissionForbidden);

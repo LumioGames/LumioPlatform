@@ -76,7 +76,9 @@ public sealed class AccountRuntimeContractTests
         Assert.True(result.AccountNewlyCreated);
         Assert.True(runtime.VerifyAccountAuthCredential(result.AccountAuthCredential!, out var principal, out var error), error);
         Assert.True(principal.BotToolContext);
-        Assert.IsType<AdmissionVerifyOutcome.Rejected>(runtime.VerifyAdmission(result.AccountAuthCredential!));
+        var rejected = Assert.IsType<AdmissionVerifyOutcome.Rejected>(AdmissionCredential.Verify(
+            result.AccountAuthCredential!, 1, runtime.AdmissionPublicKey, fixture.Clock, null));
+        Assert.Equal(AccountErrorCode.AdmissionCredentialUnbound, rejected.Code);
     }
 
     [Fact]
@@ -108,6 +110,21 @@ public sealed class AccountRuntimeContractTests
 
         Assert.Equal(claims, accepted.Payload.AllocationClaims);
         Assert.Equal(login.AccountId, accepted.Payload.AccountId);
+    }
+
+    [Fact]
+    public void bound_admission_credential_without_trusted_context_is_rejected()
+    {
+        var keys = Ed25519Keys.Generate();
+        var clock = new TestAccountClock(1_700_000_000);
+        var credential = AdmissionCredential.IssueBound(
+            keys.Seed, 1, AccountId('a'), "alice", false, clock.UnixSeconds, clock.UnixSeconds + 300,
+            Claims("hello", "hello-1", "room-1", "alloc-1"));
+
+        var rejected = Assert.IsType<AdmissionVerifyOutcome.Rejected>(
+            AdmissionCredential.Verify(credential, 1, keys.PublicKey, clock, null));
+
+        Assert.Equal(AccountErrorCode.AdmissionBindingMismatch, rejected.Code);
     }
 
     [Fact]
