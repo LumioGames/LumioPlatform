@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType><RootNamespace>Lumio.Platform.App</RootNamespace><AssemblyName>lumio-platform</AssemblyName>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup><InternalsVisibleTo Include="Lumio.Platform.Tests" /></ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <ProjectReference Include="../Lumio.Platform.Account/Lumio.Platform.Account.csproj" />
+    <Content Update="openapi/v1.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+</Project>

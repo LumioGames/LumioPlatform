@@ -1,0 +1,10 @@
+<Project>
+  <Target Name="ValidatePlatformBuildProfile" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(PlatformProductionProject)' == 'true' AND (
+             $([System.String]::Copy('%(PackageReference.Identity)').StartsWith('xunit')) OR
+             $([System.String]::Copy('%(PackageReference.Identity)').StartsWith('Microsoft.NET.Test.Sdk')))"
+           Text="PLATFORM_BUILD_PROFILE: production project $(MSBuildProjectName) must not reference test package %(PackageReference.Identity)." />
+    <Error Condition="'$(TargetFramework)' != 'net10.0'" Text="PLATFORM_BUILD_PROFILE: TargetFramework must be net10.0." />
+    <Error Condition="'$(LangVersion)' != '14.0'" Text="PLATFORM_BUILD_PROFILE: LangVersion must be 14.0." />
+  </Target>
+</Project>

@@ -1,0 +1,37 @@
+{
+  "name": "lumio-platform-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "openapi:generate": "dotnet run --project ../src/Lumio.Platform.App -c Release -- openapi-export src/Lumio.Platform.App/openapi/v1.json && openapi-typescript ../src/Lumio.Platform.App/openapi/v1.json -o src/api/schema.d.ts",
+    "openapi:check": "npm run openapi:generate && git diff --exit-code -- ../src/Lumio.Platform.App/openapi/v1.json src/api/schema.d.ts",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run openapi:check"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.102.8",
+    "openapi-fetch": "^0.15.0",
+    "react": "^19.0.8",
+    "react-dom": "^19.0.8",
+    "react-router": "^7.9.4",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^5.0.4",
+    "jsdom": "^26.1.0",
+    "oxlint": "^1.81.0",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.2",
+    "vitest": "^4.0.15"
+  }
+}
