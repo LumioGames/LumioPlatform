@@ -1,12 +1,50 @@
-import { render, screen } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { vi, expect, test } from 'vitest';
-import { App } from './App';
+import { cleanup, render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
+import { afterEach, expect, test } from 'vitest';
+import { AppRoutes } from './App';
+import { useSession } from '../stores/session';
 
-vi.mock('../api/client', () => ({ api: { GET: vi.fn().mockResolvedValue({ response: { ok: true }, data: { status: 'ok', database: 'ok' } }) } }));
+const player = {
+  accountId: 'acct_test',
+  uid: 100001,
+  loginName: 'player',
+  role: 'player' as const,
+  avatarId: 1,
+};
 
-test('renders health panel', async () => {
-  render(<QueryClientProvider client={new QueryClient()}><App /></QueryClientProvider>);
-  expect(await screen.findByText('Operational')).toBeInTheDocument();
-  expect(screen.getByText('Database: ok')).toBeInTheDocument();
+const admin = { ...player, loginName: 'admin', role: 'admin' as const };
+
+function renderAt(path: string) {
+  return render(<MemoryRouter initialEntries={[path]}><AppRoutes /></MemoryRouter>);
+}
+
+afterEach(() => {
+  cleanup();
+  useSession.setState({ user: null, status: 'anonymous' });
+});
+
+test('renders the lobby route', () => {
+  renderAt('/');
+  expect(screen.getByRole('heading', { name: '发现下一场游戏' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: '反馈' })).toBeInTheDocument();
+});
+
+test('shows a 403 page when a player visits admin routes', () => {
+  useSession.getState().setUser(player);
+  renderAt('/admin');
+  expect(screen.getByRole('heading', { name: '没有访问权限' })).toBeInTheDocument();
+  expect(screen.getByText('403 / FORBIDDEN')).toBeInTheDocument();
+});
+
+test('allows an admin into the admin dashboard', () => {
+  useSession.getState().setUser(admin);
+  renderAt('/admin');
+  expect(screen.getByRole('heading', { name: '运营后台' })).toBeInTheDocument();
+  expect(screen.getByText('管理员')).toBeInTheDocument();
+});
+
+test('sends anonymous profile visits to the login shell', () => {
+  renderAt('/me');
+  expect(screen.getByRole('heading', { name: '欢迎回来' })).toBeInTheDocument();
+  expect(screen.getByLabelText('邮箱或用户名')).toBeInTheDocument();
 });
