@@ -35,7 +35,7 @@ metadata:
 | P5-1 | R-00420 | `01a06b90-9dab-70c1-8193-15e5fbd1e59c` | 5 | LumioGame + LumioServer | backlog | 3 |
 | P5-2 | R-00421 | `01a06b90-9f99-77a3-a5a9-6ab40816933c` | 5 | LumioPlatform | backlog | 5 |
 
-派活提示词与 wave 调度按 [`cross-repo-delivery`](../skills/cross-repo-delivery/SKILL.md)：W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
+派活提示词与 wave 调度按架构仓 `LumioGameEngine/.spec/skills/cross-repo-delivery/SKILL.md`（本仓无该技能，主会话在架构仓执行）：W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
 
 ## 依赖 DAG（按 wave）
 
