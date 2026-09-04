@@ -34,21 +34,29 @@ metadata:
 
 ```json
 { "wsUrl": "wss://…", "subprotocol": "lumio.mvp.v0", "contractId": "lumio.gameplay-envelope.v1",
-  "roomId": "…", "admissionCredential": "base64url…", "admissionExpiresAt": 1757000000,
+  "serverAudience": "game-fleet-a", "gameId": "bomber", "gameReleaseId": "bomber-0.1.0",
+  "roomId": "…", "allocationId": "alloc_…", "leaseExpiresAt": 1757000300,
+  "admissionCredential": "base64url…", "admissionExpiresAt": 1757000000,
   "accountId": "acct_…", "loginName": "alice" }
 ```
 
-失败码：`unauthorized`、`account_banned`、`game_not_found`、`game_not_published`、`no_room_available`。凭证**不进 URL**；游戏页同源 `fetch`，用 Cookie 会话拿到后立即握手。每次 launch 新签发凭证（新 nonce / expiry）并记 `game.launched` 事件。
+失败码：`unauthorized`、`account_banned`、`game_not_found`、`game_not_published`、`no_room_available`。凭证**不进 URL**；游戏页同源 `fetch`，用 Cookie 会话拿到后立即握手。每次 launch 新签发凭证（新 nonce / expiry）并记 `game.launched` 事件。签名载荷绑定 `serverAudience`、`gameId`、`gameReleaseId`、`contractId`、`roomId` 与 `allocationId`，Game Server 必须逐项拒绝不匹配的票据；生产仅返回受信 `wss://` 地址。
 
 ### 房间分配器接口
 
 ```csharp
 interface IRoomAllocator { Task<RoomEndpoint> AllocateAsync(Game game, AccountId account, CancellationToken ct); }
-record RoomEndpoint(string WsUrl, string Subprotocol, string ContractId, string RoomId);
+record RoomEndpoint(string WsUrl, string Subprotocol, string ContractId, string ServerAudience,
+                    string GameId, string GameReleaseId, string RoomId,
+                    string AllocationId, DateTimeOffset LeaseExpiresAt);
 ```
 
-- v1 实现 `StaticEndpointAllocator`：返回 `games.server_ws_url` 与 `roomId = slug`（一进程一房间）。
+- v1 实现 `StaticEndpointAllocator`：从受信游戏目录返回 `games.server_ws_url`、固定 `serverAudience` / release / contract，并以 `roomId = slug` 生成 `allocationId` 与短租约（一进程一房间）。客户端不能覆盖这些值。
 - 多房间时换实现（房间登记表 + 心跳，或外部 fleet 服务），由架构仓拓扑调研定案后另立 ADR；`launch` 应答形状不变。
+
+### Bundle 与发布不变性
+
+游戏包必须是同源、第一方、不可变发布物，目录含 `index.html`、`contract.json` 与 release/hash 元数据；发布记录绑定唯一 `gameReleaseId` 和内容摘要。平台不接受客户端提供的 `wsUrl`、版本、contract 或 audience，也不把准入凭证放进 URL、日志或浏览器持久存储。
 
 ### 游戏页接入（LumioClient 侧，P2-2 卡）
 

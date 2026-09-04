@@ -13,7 +13,7 @@ metadata:
 ## 背景 / 目标
 
 - 引擎侧已有 Account Server（架构仓 ADR-054，`LumioServer/account-server/`）：用户名 / 口令、JSON 文件、只绑环回、WS 子协议 `lumio-account-v1`。它是切片级的，没有邮箱、头像、会话、后台。
-- Owner 裁决（2026-09-04，ADR-061）：平台吸收账号服成为**唯一账号权威**，**一库两端口**（WS 契约端口不改 + HTTP 端口给网页），持久层 PostgreSQL，`AccountWorld` 保留为账号域运行态模型（将来 Steam / 移动端 / 真机客户端走同一账号端口）。
+- Owner 裁决（2026-09-04，ADR-061）：平台吸收账号服成为**唯一账号权威**，**一库两端口**（WS 契约端口保持操作兼容、按 ADR-061 演进 + HTTP 端口给网页），持久层 PostgreSQL，`AccountWorld` 保留为可重建的账号域运行态模型（将来 Steam / 移动端 / 真机客户端走同一账号端口）。
 - 目标：玩家用邮箱注册、选头像、进大厅、点开游戏就在浏览器里与别人联机；运营者在后台看用户、活跃、埋点、反馈、登录记录。
 
 ## 拓扑
@@ -23,11 +23,11 @@ metadata:
   ├── HTTPS ──> lumio-platform（Kestrel 单进程）
   │              ├── /                 SPA（大厅 / 注册登录 / 反馈 / 后台，按角色路由）
   │              ├── /api/*            JSON API（Cookie 会话；platform-port-v1）
-  │              ├── /account          WS lumio-account-v1（account-port-v1，字段不改；Bot 启动器 / 集成考卷 / 工具）
+  │              ├── /account          WS lumio-account-v1（account-port-v1，保持操作兼容并按 ADR-061 演进；Bot 启动器 / 集成考卷 / 工具）
   │              ├── /games/<slug>/    静态游戏页（LumioClient 既有形态）+ contract.json
   │              ├── /openapi/v1.json  API 文档（DTO 真值在 C#）
   │              └── PostgreSQL        账号 / 凭证哈希 / 登录记录 / 游戏目录 / 反馈 / 埋点 / 设置 / 审计
-  └── WSS ────> Game Server（LumioServer；verify_admission 离线验票，零改动）
+  └── WSS ────> Game Server（LumioServer；verify_admission 离线验票，逐项校验受众 / 游戏 / release / 房间）
 ```
 
 四块设计各一份文档：[账号域](account.md)、[大厅与启动](lobby-launch.md)、[反馈](feedback.md)、[后台与埋点](admin-analytics.md)。
@@ -75,19 +75,30 @@ LumioPlatform/
 | `LUMIO_ACCOUNT_BOT_TOOL_PUBLIC_KEY_HEX` | 是 | Bot 工具凭证公钥 |
 | `PLATFORM_SMTP_HOST` / `_PORT` / `_USER` / `_PASSWORD` / `_FROM` | 邮件启用必填 | SMTP；未配置时注册请求返回 503 `email_unconfigured` |
 | `PLATFORM_EMAIL_ALLOW_CONSOLE` | 否 | `1` 时验证码打到日志（仅开发；生产禁止） |
-| `PLATFORM_BOOTSTRAP_ADMIN_EMAIL` | 否 | 启动时把该邮箱账号幂等提升为 admin 并写审计 |
+| `PLATFORM_DATA_PROTECTION_KEYS_PATH` | 是（生产） | ASP.NET Data Protection key ring 受限持久卷；容器重启不可丢失 |
+| `PLATFORM_SESSION_EPOCH` | 否 | 安全事件或批量会话失效时递增的初始 epoch |
+| `PLATFORM_RATE_LIMIT_*` | 是（公网） | 按 IP / 邮箱 / 账号分区的注册、登录、验证码、反馈、track 阈值 |
 | `PLATFORM_TEST_DB_CONNECTION_STRING` | 测试 | 测试库连接串；缺失即测试失败 |
+
+首个管理员不使用启动环境变量提权，改用一次性 `lumio-platform admin bootstrap --email <address>` 命令，并写入审计。
 
 ## 运行与进程边界
 
 - readiness：stdout 单行 `PLATFORM_READY ` + JSON `{"port":N,"pid":P,"listen":"http://127.0.0.1:N","database":"postgresql","accountPort":"/account","contractIds":["lumio.account-port.v1","lumio.platform-port.v1"]}`（骨架期 `contractIds` 为空数组）。
 - 退出码：0 正常关闭；1 初始化失败（缺配置、迁移失败、数据库不可达）；2 运行期致命；3 参数错误。
-- 关闭：SIGTERM → 停止接受连接 → 关闭 WS → flush → 0。
+- 关闭：SIGTERM → 停止接受新分配 → 关闭 WS → flush → 0；Game Server 与 Platform 都必须支持 Drain。
 - 启动时自动 `Migrate`（单实例假设；多实例前改为显式迁移步骤，另立决策）。
 
-## 部署假设（v1，待调研定案）
+## 部署假设（v1，最终门前保持假设）
 
-平台、Game Server、PostgreSQL 同一台机器、各一个容器；TLS 终结与 WSS 由反向代理或 Kestrel 直出，二选一由架构仓 `plans/2026-09-04-platform-topology-research-prompt.md` 的调研给出结论。平台设计对拓扑保持中立：launch 端口返回分配好的 `wsUrl + roomId`，分配器可换（见 lobby-launch.md）。
+平台、Game Server、PostgreSQL 同一台机器、各一个容器只是待验证假设，不是容量承诺。架构仓 `plans/2026-09-04-platform-topology-research-prompt.md` 的调研必须测量冷启动、RSS、每玩家内存、Tick P95/P99、带宽、快照大小、房间规模与同机 DB 争抢，并给出进程 / 房间 / 容器映射和拆机信号。拓扑与容量研究可与功能卡并行，但必须在 R-00421 最终门前通过；TLS 终结与 WSS 由调研结论决定。平台设计保持拓扑中立：launch 返回受信分配器生成的 `wsUrl`、受众、release、contract、`roomId` 和 `allocationId`（见 lobby-launch.md）。
+
+## 安全与上线门
+
+- Cookie 状态变更启用 CSRF token、严格 Origin / Fetch Metadata；WebSocket `/account` 校验 Origin，限制帧大小、并发连接、空闲时间、发送队列，并在慢消费者超阈值时断开。
+- Admission Ticket 采用 300 秒有界 Bearer 策略，使用 WSS/TLS、受众绑定、单账号单活跃会话与审计；v1 不引入在线 nonce 消费表。Active + Previous 公钥轮换必须可演练，票据不进 URL 或日志。
+- 生产 bundle 仅允许同源、第一方、不可变 release；发布记录绑定内容 hash，客户端不得覆盖地址或版本。
+- R-00421 是容量、备份恢复、`kill -9` 重启、慢客户端、Drain、Rollback、密钥轮换和 Soak 的最终门；缺少证据保持 No-Go。
 
 ## 收口门槛与验证
 
@@ -95,11 +106,11 @@ LumioPlatform/
 
 ## 非目标（v1）
 
-匹配 / 多房间分配器实现、Steam / 第三方登录、找回 / 改密、聊天 / 好友 / 排行、CDN、多实例部署、在线吊销凭证、限流（暴露公网前必补，P5-2）。
+匹配 / 多房间分配器实现、Steam / 第三方登录、找回 / 改密、聊天 / 好友 / 排行、CDN、多实例部署、在线吊销凭证。限流、CSRF、密钥持久化与 WS 防护不是非目标，必须在对应端点卡完成。
 
 ## 待解决
 
-- 拓扑与容量（调研中）：进程 ↔ 房间 ↔ 容器映射、单机双容器成立规模、拆机信号。
+- 拓扑与容量（调研中，R-00421 前置）：进程 ↔ 房间 ↔ 容器映射、单机双容器成立规模、拆机信号和故障恢复预算。
 - 中文用户名：当前沿用 ADR-054 ASCII grammar；放开需改凭证 `loginName` 字段类型（新 ADR）。
 - `uid` 公开数字 ID 是否保留（默认保留）。
 - 默认头像集数量与资产（默认 12，资产由美术给）。

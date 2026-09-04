@@ -8,6 +8,25 @@ metadata:
 
 # LumioPlatform MS-1 卡片（workflow-plan: platform-ms1）
 
+## 路线裁决（2026-09-04）
+
+本计划采用混合路线：保留 ADR-061 的模块化单体、账号唯一权威、PostgreSQL 与 `AccountWorld` 边界；采用技术架构 Review 的 Gate 0-5 质量门，把契约、安全、真实纵切、容量和故障恢复前置到对应卡的验收。平台当前仍是 Conditional Go / 生产 No-Go，未完成最终门不得宣称可公开上线。
+
+### 方案比较与决定
+
+| 主题 | 当前需求室 | 技术架构 Review | 裁决 |
+|---|---|---|---|
+| 总体架构与仓库边界 | 模块化单体、Platform 不承载 ECS | 保留该边界 | **保留** |
+| 账号运行态 | ADR-061 保留 `AccountWorld` | 建议 v1 可删除 | **冲突：保留，若要改变必须新增 ADR** |
+| Admission Ticket | 账号/时间/nonce，分配字段并列返回 | 绑定 audience/game/release/room/allocation | **采纳并改写契约** |
+| 安全顺序 | 大部分限流/访问控制在 W5 | CSRF、限流、OTP、密钥、WS 防护随端点前置 | **采纳并按端点重排** |
+| Runtime / 持久化 | 进程内 ECS 卡已大量完成 | 要求真实网络、观察者、重启恢复纵切 | **采纳为跨仓集成门，不能以卡片 done 代替证据** |
+| 拓扑与容量 | 部署假设，暂无日历排期 | 实测后作为最终门 | **采纳并延后到 R-00421 门控** |
+
+### 调度真值
+
+以下是依赖与优先级调度图，不是日历排期。当前不创建 target date、release window、owner load 或 WorkItem；Workflow 上的逻辑 wave 只有在真实资源和验收证据补齐后才能转成日历计划。
+
 - 真值优先级（高 → 低）：架构仓 `ADR-061` / `ADR-054`、`engine/wire/platform-port-v1.json` / `account-port-v1.json`、本仓 `knowledge/features/*.md`、本仓 `decisions/000N`、本卡正文。Workflow 上任何卡的 done、handback、closeout 报告都不是真值。
 - 分工原则：卡片写清上下文、怎么决策的、具体改什么；执行者只干活，架构设计在文档。每张卡自包含。
 - 卡格式照 [`tasks/README.md`](../tasks/README.md)：目标 / 涉及范围（文件集）/ 验收标准 / 依赖 / 接口（Consumes / Produces）。落 Workflow 时 `module = LumioPlatform`（跨仓卡写目标仓名），标题 `[仓名] 成果描述`。
@@ -15,13 +34,13 @@ metadata:
 ## 落单读回（2026-09-04，Owner 授权后由架构仓主会话写入并逐对象 GET 核对；bundle `wf-20260904-platform-ms1`，蓝图 `workflow-plan: platform-ms1/r1`）
 
 - 需求室：**RM-00012**「LumioPlatform · 游戏平台 MS-1（账号权威 / 大厅 / 反馈 / 后台）」（`01a06b90-0dcc-7b3d-b730-f891572423bc`，module `LumioPlatform`）。
-- 接口冻结物：架构仓 `origin/main` `c9f017b`（PR #77：ADR-061 + `platform-port-v1.json` + `account-port-v1.json` 修订）。
+- 接口冻结物：架构仓 `origin/main` `c9f017b`（PR #77 已合入：ADR-061 + `platform-port-v1.json` + `account-port-v1.json` 修订）。
 - 验收项类型「需求验收」/ 初始状态「未提交」（`not_started`），`sourceKind=ai`、`sourceRef=workflow-plan: platform-ms1/r1/<临时号>`；18 条需求引用边经 `bindRequirementReference` 写入并由 `GET /requirement-graph?roomId=` 读回（`truncated=false`）。
 - 未归属里程碑、未指定 owner（API 取创建人）。卡正文里前置卡以「displayKey（临时号）」标注；下游前向引用仍用临时号，对照本表。
 
 | 临时号 | displayKey | UUID | wave | 仓 | 状态 | 验收项 |
 |---|---|---|---|---|---|---|
-| R0 | R-00409 | `01a06b90-1f4f-7b1a-9d04-648fd4553014` | — | LumioPlatform | backlog | 0 |
+| R0 / Gate 0 | R-00409 | `01a06b90-1f4f-7b1a-9d04-648fd4553014` | Gate 0 | LumioPlatform | backlog | 0 |
 | P0-1 | R-00410 | `01a06b90-3090-7c9e-9229-af14854726c7` | 0 | LumioPlatform | backlog | 9 |
 | P1-1 | R-00411 | `01a06b90-42d6-72ad-a88b-272a47d62c1f` | 1 | LumioPlatform | backlog | 5 |
 | P2-1 | R-00412 | `01a06b90-556a-73b5-b134-c60f3f54f6e8` | 2 | LumioPlatform | backlog | 8 |
@@ -32,25 +51,32 @@ metadata:
 | P4-1 | R-00417 | `01a06b90-886d-7bcd-b72e-e0c82acbca72` | 4 | LumioPlatform | backlog | 5 |
 | P4-2 | R-00418 | `01a06b90-89d8-7eb9-aaa3-2cf7f028fd8e` | 4 | LumioPlatform | backlog | 6 |
 | P4-3 | R-00419 | `01a06b90-8bb8-78ad-8e24-807d323d577e` | 4 | LumioPlatform | backlog | 4 |
-| P5-1 | R-00420 | `01a06b90-9dab-70c1-8193-15e5fbd1e59c` | 5 | LumioGame + LumioServer | backlog | 3 |
-| P5-2 | R-00421 | `01a06b90-9f99-77a3-a5a9-6ab40816933c` | 5 | LumioPlatform | backlog | 5 |
+| P5-1 | R-00420 | `01a06b90-9dab-70c1-8193-15e5fbd1e59c` | 5a | LumioGame + LumioServer | backlog | 3 |
+| P5-2 | R-00421 | `01a06b90-9f99-77a3-a5a9-6ab40816933c` | 5b | LumioPlatform | backlog | 5 |
 
-派活提示词与 wave 调度按架构仓 `LumioGameEngine/.spec/skills/cross-repo-delivery/SKILL.md`（本仓无该技能，主会话在架构仓执行）：W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
+派活提示词与 wave 调度按架构仓 `LumioGameEngine/.spec/skills/cross-repo-delivery/SKILL.md`（本仓无该技能，主会话在架构仓执行）：Gate 0（R-00409）先冻结契约、治理和镜像基线；其后 W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
 
-## 依赖 DAG（按 wave）
+## 依赖 DAG（按逻辑 wave / Gate）
 
 ```text
-W0  P0-1 骨架（LumioPlatform）
+Gate 0  R0 / R-00409：契约与治理冻结（架构仓 `origin/main` `c9f017b`、镜像 SHA、漂移 CI、Owner 裁决）
+     ↓
+W0  P0-1 骨架（LumioPlatform；Gate 0 通过后）
      ↓
 W1  P1-1 数据模型与首个迁移（LumioPlatform）
      ↓
-W2  P2-1 账号域搬入 + WS 端口 + Postgres 存储（LumioPlatform）   ∥   P2-2 SPA 骨架（LumioPlatform web/）
+W2  P2-1 账号域搬入 + WS 安全边界 + Postgres 存储（LumioPlatform）   ∥   P2-2 SPA 骨架（LumioPlatform web/）
      ↓
-W3  P3-1 HTTP 账号 / 会话 / 邮件   ∥   P3-2 大厅与启动   ∥   P3-3 游戏页接 launch（LumioClient）
+Gate 1 / W3  P3-1 HTTP 账号安全纵切   ∥   P3-2 安全大厅与启动（Audience-bound Launch）   ∥   P3-3 游戏页接 launch（LumioClient）
      ↓
-W4  P4-1 反馈   ∥   P4-2 后台（用户 / 登录记录 / 游戏目录 / 设置）   ∥   P4-3 埋点与看板
-     ↓
-W5  P5-1 集成考卷指向平台 + 退役 account-server（LumioGame + LumioServer）   ∥   P5-2 上线前置（限流 / 访问控制 / 镜像定稿）
+Gate 2 / W4  P4-1 反馈与反馈端点限流   ∥   P4-2 后台访问控制 / 一次性 bootstrap / Session Epoch   ∥   P4-3 埋点与看板
+
+Gate 3 / W5a  P5-1 真实 Platform → Game Server 注册、Launch、验票、握手集成 + 退役 account-server（LumioGame + LumioServer）
+  （与 Gate 2 并行；仅依赖 P2-1、P3-2、P3-3，不等待反馈 / analytics）
+
+拓扑 / 容量研究（架构仓研究任务，可与 W3-W5a 并行）
+      ↓
+Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soak 与容量最终门
 ```
 
 同 wave 各卡文件集互不重叠；并行 worker 各在独立 git worktree。W0 / W1 单卡串行是因为后续全部卡消费它们的产物。
@@ -88,11 +114,37 @@ W5  P5-1 集成考卷指向平台 + 退役 account-server（LumioGame + LumioSer
 
 ---
 
+<!-- card:R0 -->
+# R0 / Gate 0 · [LumioPlatform] 契约与治理冻结
+
+- wave: Gate 0 · priority: P0 · risk: high（跨仓契约与安全基线，合入前单审）
+- 前置：无；由架构仓 Owner 确认后，P0-1 才能开工。
+
+## 涉及范围
+
+架构仓 `origin/main` `c9f017b`、本仓 `contract/ORIGIN` 与契约镜像、`engine/wire/account-port-v1.json` / `platform-port-v1.json` 的生成摘要、镜像漂移 CI、ADR-061 与本计划的裁决记录。
+
+## 验收标准
+
+- [ ] ADR-061 与两份 v1 契约在架构仓 `origin/main` `c9f017b` 可读回；本仓 ORIGIN 和镜像字节一致。
+- [ ] Admission Ticket 的 audience / game / release / contract / room / allocation 字段及 300 秒 Bearer 重放边界由 Owner 明确；缺口不得由实现仓自行绕过。
+- [ ] CI 能在契约或生成物漂移时失败；Owner、版本、审计入口和本计划裁决记录可追溯。
+
+## 依赖
+
+无。
+
+## 接口
+
+- Produces：P0-1 可消费的契约 SHA、镜像校验和与 Gate 0 通过证据。
+
+---
+
 <!-- card:P0-1 -->
 # P0-1 · [LumioPlatform] 仓库骨架：.NET 三项目 + 测试、web/ 脚手架、契约镜像、本地数据库脚本、CI
 
 - wave: 0 · priority: P0 · risk: medium
-- 前置：架构仓 ADR-061 与 `engine/wire/platform-port-v1.json` 已在 `origin/main`（本卡钉定该提交号为 `contract/ORIGIN`）。
+- 前置：Gate 0 / R0 通过；架构仓 ADR-061 与 `engine/wire/platform-port-v1.json` 已在 `origin/main` `c9f017b`（本卡钉定该提交号为 `contract/ORIGIN`，并由 CI 做镜像漂移检查）。
 
 ## 涉及范围
 
@@ -180,6 +232,7 @@ P0-1。
 ## 怎么做（`features/account.md`「模型」「端口一」）
 
 - `AccountWorld` / `AccountRuntime` / `CredentialStore` / `AdmissionCredential` / `BotToolCredential` / `LumioBin` / `LumioSignature` / `Argon2idPasswordHasher` / `LoginNameRules` 原样搬入，不重构；`AccountIdentityComponent` 扩展 `uid` / `email` / `avatarId` / `role` / `status`。
+- `/account` WS 在本卡完成 Origin 校验、帧大小 / 空闲 / 并发连接 / 发送队列上限和慢消费者断开策略；限制值来自配置，连接与错误事件写审计但不记录凭证原文。
 - 持久层：`PostgresAccountStore` 用 P1-1 的 `Account` / `AccountCredential` 表；`AccountWorld` 按 AccountId 惰性加载；并发首次注册靠唯一约束 + 事务重试收敛。
 - 注册策略 `PLATFORM_REGISTRATION_PROFILE`：`test` 照 ADR-054；`production` 非 Bot 命名空间的新 loginName 在 WS 端口拒 `registration_requires_platform`（码来自 `account-port-v1.json`，ADR-061 授权扩展；WS `Error` 消息携带）。
 - 登录尝试写 `login_attempts(port = ws)`；`status = banned` 拒 `account_banned`。
@@ -191,6 +244,7 @@ P0-1。
 - [ ] `account_restart_stability`：宿主重启后同口令重登返回同一 `accountId`（Postgres 持久）。
 - [ ] `concurrent_first_login_converges`：100 个并发首次登录得到同一 `accountId`，`accounts` 恰一行。
 - [ ] `production` profile 下普通新 loginName 在 WS 端口被拒 `registration_requires_platform`；`test` profile 下照旧创建。
+- [ ] `/account` Origin、帧大小、并发连接、空闲时间、发送队列和慢消费者限制均有反例测试，超限有确定错误且不阻塞其他连接。
 - [ ] grep 证明：`Lumio.Platform.Account` 无 JSON 文件存储、无第二份哈希 / 签名实现；日志与测试输出不含口令、哈希、凭证原文。
 - [ ] `PLATFORM_READY` 行 `contractIds` 含 `lumio.account-port.v1`，`accountPort` = `/account`。
 - [ ] 收口门槛全绿。
@@ -202,7 +256,7 @@ P1-1。
 ## 接口
 
 - Consumes：P1-1 实体与 `PlatformDbContext`。
-- Produces：`AccountRuntime`（`LoginOrRegisterAsync(LoginOrRegisterRequest) → LoginOrRegisterOutcome`；`RegisterWithEmailAsync(email, loginName, password) → Account`；`VerifyPasswordAsync(email | loginName, password) → Account | wrong_password`；`IssueAdmissionCredential(Account) → (credential, expiresAt)`；`SetAvatarAsync` / `BanAsync` / `UnbanAsync` / `SetRoleAsync`）；`AccountQueries`（按 accountId / uid / email / loginName 读投影）。
+- Produces：`AccountRuntime`（`LoginOrRegisterAsync(LoginOrRegisterRequest) → LoginOrRegisterOutcome`；`RegisterWithEmailAsync(email, loginName, password) → Account`；`VerifyPasswordAsync(email | loginName, password) → Account | wrong_password`；`IssueAdmissionCredential(Account, RoomEndpoint) → (credential, expiresAt)`；`SetAvatarAsync` / `BanAsync` / `UnbanAsync` / `SetRoleAsync`）；`AccountQueries`（按 accountId / uid / email / loginName 读投影）。
 
 ---
 
@@ -252,7 +306,8 @@ P0-1。
 ## 怎么做（`features/account.md`「端口二」、`decisions/0003`）
 
 - 端点表照 account.md；错误应答 `{ code, detail }`，码来自 `contract/platform-port-v1.json`。
-- 验证码：6 位、10 分钟、5 次尝试、60 秒冷却、只存 SHA-256；SMTP 未配置 → 503 `email_unconfigured`。
+- 验证码：6 位、10 分钟、5 次尝试、60 秒冷却；使用服务端 pepper 的 HMAC 存储，验证、尝试次数和消费在同一事务中原子完成；SMTP 未配置 → 503 `email_unconfigured`。所有注册、登录、验证码端点使用按 IP / 邮箱 / 账号分区的限流。
+- Cookie 状态变更要求 CSRF token 与严格 Origin / Fetch Metadata；Data Protection key 使用受限持久卷，重启后会话仍可解密。
 - Cookie：`AddAuthentication().AddCookie()`，名 `lumio_platform_session`，HttpOnly、SameSite=Lax、`Secure` 随 `PLATFORM_PUBLIC_ORIGIN`；14 天滑动；每次请求核 `status`。
 - 登录尝试写 `login_attempts(port = http)`；事件 `account.registered` / `account.login`。
 
@@ -263,6 +318,8 @@ P0-1。
 - [ ] `invalid_credentials` 对「邮箱不存在」与「口令错」返回同一应答体（防枚举，测试比对）。
 - [ ] Bot 命名空间经 HTTP 注册一律 `bot_namespace_register_forbidden`。
 - [ ] SMTP 未配置且未开 console 开关时 request-code 返回 503，且不落库。
+- [ ] 验证码仅保存 pepper-HMAC；并发验证至多一次成功消费，旧码、超次码和重复提交均失败。
+- [ ] CSRF / Origin / Fetch Metadata 缺失或错误时所有 Cookie 状态变更被拒；Data Protection key 持久化后重启仍能解密会话；session epoch 变化立即使旧会话失效。
 - [ ] 前端：注册 / 登录 / 我的资料 / 换头像可用（vitest 组件测试 + 手动截图）。
 - [ ] `openapi:check` 零 diff；收口门槛全绿。
 
@@ -290,7 +347,9 @@ P2-1、P2-2。
 ## 怎么做（`features/lobby-launch.md`）
 
 - 静态托管只对 `published` slug 生效，根目录 `PLATFORM_GAMES_ROOT`，缺失时启动失败（退出码 1）。
-- launch：需会话；`account.status = banned` → 403；分配器返回端点；`AccountRuntime.IssueAdmissionCredential`；事件 `game.launched`。凭证不进 URL、不进日志。
+- launch：需会话；`account.status = banned` → 403；分配器返回带 `serverAudience`、`gameId`、`gameReleaseId`、`contractId`、`roomId`、`allocationId` 和租约到期时间的端点；这些字段连同账号、签发/过期时间、nonce 一起进入 Admission Ticket 签名载荷；Game Server 必须逐项校验。凭证不进 URL、不进日志，生产只允许受信 `wss://` 端点。
+- 游戏包必须是同源、第一方、不可变发布物；发布记录绑定唯一 release/hash，launch 不接受客户端提供的地址或版本。
+- launch 属于 Cookie 状态变更，要求 CSRF token、严格 Origin / Fetch Metadata，并按 IP / 账号 / 游戏分区限流；客户端不得覆盖 allocator 返回的任何字段。
 
 ## 验收标准
 
@@ -307,7 +366,7 @@ P2-1、P2-2。
 ## 接口
 
 - Consumes：`AccountRuntime.IssueAdmissionCredential`。
-- Produces：`IRoomAllocator.AllocateAsync(Game, AccountId, ct) → RoomEndpoint(WsUrl, Subprotocol, ContractId, RoomId)`；`/api/games/*`。
+- Produces：`IRoomAllocator.AllocateAsync(Game, AccountId, ct) → RoomEndpoint(WsUrl, Subprotocol, ContractId, ServerAudience, GameId, GameReleaseId, RoomId, AllocationId, LeaseExpiresAt)`；`/api/games/*`。
 
 ---
 
@@ -351,6 +410,8 @@ P2-1、P2-2。
 ## 验收标准（`features/feedback.md`）
 
 - [ ] 匿名与登录提交各一条成功；超长拒 `feedback_too_long`。
+- [ ] 反馈提交按 IP / 账号分区限流，超阈值返回 429 `rate_limited`，与注册/登录限流策略独立。
+- [ ] Cookie 状态变更要求 CSRF token、严格 Origin / Fetch Metadata；跨站反馈提交被拒。
 - [ ] 后台按 `status` / `type` / `gameSlug` 过滤；状态变更写 `audit_log`。
 - [ ] 社群外链经设置读写，大厅与反馈页按钮跳转正确。
 - [ ] 事件 `feedback.submitted` 落表；收口门槛全绿。
@@ -374,7 +435,9 @@ P3-1。
 ## 验收标准（`features/admin-analytics.md`「管理员」「用户与登录记录」「游戏目录与设置」）
 
 - [ ] player 访问任一 `/api/admin/*` 得 403；admin 得 200（测试）。
-- [ ] `PLATFORM_BOOTSTRAP_ADMIN_EMAIL` 提升幂等且写审计；邮箱不存在只告警。
+- [ ] 通过一次性 `lumio-platform admin bootstrap --email <address>` 命令提升首个管理员并写审计；运行时不根据环境变量自动提权。
+- [ ] 所有管理员 Cookie 状态变更要求 CSRF token、严格 Origin / Fetch Metadata；管理员端点按账号/IP 分区限流。
+- [ ] 管理写操作推进 `security_version/session_epoch`；封禁、改角色或安全事件后旧会话立即失效。
 - [ ] 封禁后该账号两端口登录均拒 `account_banned`，已有会话下一请求 401。
 - [ ] 每个管理写操作一条 `audit_log`（before / after）。
 - [ ] 收口门槛全绿。
@@ -398,6 +461,7 @@ P3-1、P3-2。
 ## 验收标准（`features/admin-analytics.md`「埋点」）
 
 - [ ] 批量 51 条拒 `batch_too_large`；非法事件名拒 `invalid_event`；`props` > 4 KB 拒。
+- [ ] track 按 IP / 账号分区限流，超阈值返回 429 `rate_limited`，不影响已认证的管理查询。
 - [ ] `stats` 对已知固定数据集返回正确 DAU / WAU / 注册数 / 各游戏启动次数 / 反馈数（测试用例带期望值）。
 - [ ] 前端在大厅曝光、点击启动、提交反馈处上报（vitest 断言调用）。
 - [ ] 收口门槛全绿。
@@ -411,7 +475,7 @@ P3-1、P3-2。
 <!-- card:P5-1 -->
 # P5-1 · [LumioGame + LumioServer] 集成考卷指向平台账号端口；退役 `LumioServer/account-server/`
 
-- wave: 5 · priority: P0 · risk: high
+- wave: 5a · priority: P0 · risk: high
 - 前置：P2-1、P3-2、P3-3 合入并 push；架构仓 ADR-061 退役条件（平台过 account-port-v1 全部用例）已由 P2-1 证据满足。
 
 ## 涉及范围
@@ -431,23 +495,23 @@ P2-1、P3-2、P3-3。
 ---
 
 <!-- card:P5-2 -->
-# P5-2 · [LumioPlatform] 上线前置：限流、非环回绑定的访问控制确认、Dockerfile / compose 定稿、密钥分发说明
+# P5-2 · [LumioPlatform] 上线最终门：拓扑 / 容量 / 故障恢复 / 部署与密钥演练
 
-- wave: 5 · priority: P0 · risk: high（安全面，合入前单审）
-- 前置：P4-1 / P4-2 / P4-3 合入；架构仓拓扑调研结论已落 ADR。
+- wave: 5b · priority: P0 · risk: high（安全面，合入前单审）
+- 前置：P5-1 合入；P4-1 / P4-2 / P4-3 的功能证据可并行完成；架构仓拓扑调研结论已落 ADR。
 
 ## 涉及范围
 
-`src/Lumio.Platform.App/RateLimiting/`（登录 / 注册 / 验证码 / 反馈 / track 的 ASP.NET 内置限流策略，阈值走环境变量）、`Dockerfile`、`docker-compose.yml`、`eng/`、`.spec/knowledge/features/platform.md`「部署假设」改为定案、`tests/`。
+`Dockerfile`、`docker-compose.yml`、`eng/`、`.spec/knowledge/features/platform.md`「部署假设」、`tests/`；限流实现与端点验收归属 P3-1 / P3-2 / P4-1，不在本卡作为晚期新增功能。
 
 ## 验收标准
 
-- [ ] 限流反例：超阈值请求得 429 `rate_limited`，阈值改环境变量即时生效（贴两次输出）。
+- [ ] 拓扑与容量基准覆盖 1/10/50/100 玩家及房间，并记录拆机信号（Tick P99、RSS、带宽、DB CPU/IO、启动延迟）。
 - [ ] `PLATFORM_LISTEN_URL` 为非环回且 `PLATFORM_PUBLIC_ORIGIN` 非 https 时启动拒绝（退出码 1），文档写明。
-- [ ] `docker compose up` 起 platform + postgres + 一个 Game Server 容器，浏览器完成注册 → 大厅 → 启动 → 握手（截图 + 日志）。
-- [ ] 验票公钥分发步骤写进 platform.md 并实测。
+- [ ] `docker compose up` 起 platform + postgres + 一个 Game Server 容器，浏览器完成注册 → 大厅 → 启动 → Audience-bound 验票 → 握手；覆盖慢客户端、Platform/Game Server 重启和 `kill -9` 恢复（截图 + 日志）。
+- [ ] 备份恢复、Admission Key Active/Previous 轮换、Drain、Rollback、密钥分发与脱敏日志实测。
 - [ ] 收口门槛全绿。
 
 ## 依赖
 
-P4-1、P4-2、P4-3；架构仓拓扑 ADR。
+P5-1；P4-1、P4-2、P4-3 的功能证据可并行完成；架构仓拓扑 ADR。
