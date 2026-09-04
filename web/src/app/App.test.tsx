@@ -85,3 +85,19 @@ test('feedback form validates content and records a new entry', () => {
   expect(screen.getByRole('status')).toHaveTextContent('收到了，谢谢');
   expect(screen.getByText('房间反馈')).toBeInTheDocument();
 });
+
+test('opens and closes the developer community dialog', () => {
+  renderAt('/');
+  fireEvent.click(screen.getByRole('button', { name: '开发者交流群' }));
+  expect(screen.getByRole('dialog', { name: '开发者交流群' })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: '关闭' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+});
+
+test('supports launch status routes without a slug', () => {
+  renderAt('/launching');
+  expect(screen.getByRole('heading', { name: /正在进入/ })).toBeInTheDocument();
+  cleanup();
+  renderAt('/launch-fail');
+  expect(screen.getByRole('heading', { name: '现在进不去，稍后再试' })).toBeInTheDocument();
+});

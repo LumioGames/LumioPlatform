@@ -1,4 +1,5 @@
 import { BrowserRouter, Link, NavLink, Outlet, Route, Routes, useLocation } from 'react-router';
+import { useState } from 'react';
 import { useSession } from '../stores/session';
 import { AdminPage, AdminSectionPage } from '../features/admin/AdminPages';
 import { FeedbackPage } from '../features/feedback/FeedbackPage';
@@ -24,6 +25,7 @@ function Brand() {
 
 function Header() {
   const { user, logout } = useSession();
+  const [communityOpen, setCommunityOpen] = useState(false);
   return (
     <header className={`ui-nav ${styles.nav}`}>
       <Brand />
@@ -31,6 +33,7 @@ function Header() {
         <NavLink to="/" end>大厅</NavLink>
         <NavLink to="/feedback">反馈</NavLink>
         <NavLink to="/roadmap">Roadmap</NavLink>
+        <button className={`ui-btn ui-btn--quiet ui-btn--sm ${styles.communityButton}`} type="button" onClick={() => setCommunityOpen(true)}>开发者交流群</button>
         <a href="https://github.com/LumioGames" target="_blank" rel="noreferrer">开源引擎 ↗</a>
         {user?.role === 'admin' && <NavLink to="/admin">管理后台</NavLink>}
       </nav>
@@ -47,8 +50,13 @@ function Header() {
           </>
         )}
       </div>
+      {communityOpen && <CommunityDialog onClose={() => setCommunityOpen(false)} />}
     </header>
   );
+}
+
+function CommunityDialog({ onClose }: { onClose: () => void }) {
+  return <div className={styles.modalBackdrop} role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="community-title"><div className={styles.modalHeading}><div><span className="ui-kicker">COMMUNITY</span><h2 id="community-title">开发者交流群</h2></div><button className="ui-btn ui-btn--quiet ui-btn--sm" type="button" aria-label="关闭" onClick={onClose}>关闭</button></div><p className="ui-muted">加入社区，和其他 Lumio 玩家交流。</p><div className={styles.qrGrid}><div aria-label="飞书群二维码占位" /><div aria-label="QQ 群二维码占位" /></div><div className="ui-actions"><a className="ui-btn ui-btn--primary" href="https://www.feishu.cn" target="_blank" rel="noreferrer">飞书群 ↗</a><a className="ui-btn ui-btn--ghost" href="https://qm.qq.com" target="_blank" rel="noreferrer">QQ 群 ↗</a></div></section></div>;
 }
 
 function Shell() {
@@ -98,7 +106,9 @@ export function AppRoutes() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="feedback" element={<FeedbackPage />} />
         <Route path="roadmap" element={<RoadmapPage />} />
+        <Route path="launching" element={<LaunchingPage />} />
         <Route path="launching/:slug" element={<LaunchingPage />} />
+        <Route path="launch-fail" element={<LaunchFailPage />} />
         <Route path="launch-fail/:slug" element={<LaunchFailPage />} />
         <Route path="games/:slug/*" element={<GamePage />} />
         <Route path="me" element={<MeGuard />} />
