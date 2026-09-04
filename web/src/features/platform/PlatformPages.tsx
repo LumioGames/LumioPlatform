@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import type { CSSProperties } from 'react';
 import styles from './platform.module.css';
@@ -73,18 +73,13 @@ export function LaunchFailPage() {
 export function GamePage() {
   const { slug = 'voxel-bomber' } = useParams();
   const [copied, setCopied] = useState(false);
-  const inviteUrl = useMemo(() => `${window.location.origin}/games/${slug}/`, [slug]);
   const copyInvite = async () => {
-    try { await navigator.clipboard.writeText(inviteUrl); setCopied(true); window.setTimeout(() => setCopied(false), 1800); } catch { setCopied(false); }
+    try { await navigator.clipboard.writeText(window.location.href); setCopied(true); window.setTimeout(() => setCopied(false), 1800); } catch { setCopied(false); }
   };
   return (
     <section className={styles.gamePage} aria-labelledby="game-title">
-      <div className={styles.gameBar}><Link className="ui-btn ui-btn--quiet ui-btn--sm" to="/">返回大厅</Link><span className="ui-chip"><i style={{ '--tone': 'var(--ui-mint)' } as CSSProperties} />房间 vb-1 · 等待连接</span><button className="ui-btn ui-btn--primary ui-btn--sm" type="button" onClick={() => void copyInvite()}>{copied ? '已复制' : '邀请朋友'}</button></div>
-      <div className={styles.gameCanvas}>
-        <div className={styles.scoreboard}><strong>Voxel Bomber</strong><span>你的分数 0</span></div>
-        <div className={styles.canvasGrid} aria-hidden="true"><span /><span /><span /><span /><span /><span /></div>
-        <p className={styles.canvasHint}>游戏页面已准备好，等待平台准入连接。</p>
-      </div>
+      <div className={styles.gameBar}><Link className="ui-btn ui-btn--quiet ui-btn--sm" to="/">返回大厅</Link><span className="ui-chip"><i style={{ '--tone': 'var(--ui-mint)' } as CSSProperties} />{slug} · 平台托管页面</span><button className="ui-btn ui-btn--primary ui-btn--sm" type="button" onClick={() => void copyInvite()}>{copied ? '已复制' : '复制邀请链接'}</button></div>
+      <div className={`ui-card ${styles.hostedNotice}`}><span className="ui-kicker">GAME HOST</span><h1 id="game-title">正在打开 {slug}</h1><p className="ui-muted">游戏正在准备房间连接，稍后将进入平台托管的游戏页面。</p><Link className="ui-btn ui-btn--primary" to="/">返回大厅</Link></div>
     </section>
   );
 }
