@@ -12,6 +12,7 @@ public sealed class Account
     public string LoginName { get; set; } = string.Empty;
     public string? Email { get; set; }
     public DateTime? EmailVerifiedAt { get; set; }
+    public long SecurityVersion { get; set; }
     public int AvatarId { get; set; }
     public string Role { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
@@ -28,10 +29,13 @@ public sealed class AccountCredential
 
 public sealed class EmailVerification
 {
+    public string ChallengeId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string CodeHash { get; set; } = string.Empty;
+    public string CodeHmac { get; set; } = string.Empty;
+    public int PepperVersion { get; set; }
     public DateTime ExpiresAt { get; set; }
     public int Attempts { get; set; }
+    public DateTime? ConsumedAt { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

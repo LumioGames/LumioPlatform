@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lumio.Platform.Data.Migrations
 {
     [DbContext(typeof(PlatformDbContext))]
-    [Migration("20260904105923_InitialPlatformSchema")]
+    [Migration("20260904124503_InitialPlatformSchema")]
     partial class InitialPlatformSchema
     {
         /// <inheritdoc />
@@ -74,6 +74,12 @@ namespace Lumio.Platform.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("role");
+
+                    b.Property<long>("SecurityVersion")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(1L)
+                        .HasColumnName("security_version");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -167,30 +173,49 @@ namespace Lumio.Platform.Data.Migrations
 
             modelBuilder.Entity("Lumio.Platform.Data.EmailVerification", b =>
                 {
-                    b.Property<string>("Email")
-                        .HasMaxLength(254)
-                        .HasColumnType("character varying(254)")
-                        .HasColumnName("email");
+                    b.Property<string>("ChallengeId")
+                        .HasColumnType("text")
+                        .HasColumnName("challenge_id");
 
                     b.Property<int>("Attempts")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("attempts");
 
-                    b.Property<string>("CodeHash")
+                    b.Property<string>("CodeHmac")
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")
-                        .HasColumnName("code_hash");
+                        .HasColumnName("code_hmac");
+
+                    b.Property<DateTime?>("ConsumedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("consumed_at");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)")
+                        .HasColumnName("email");
+
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
 
-                    b.HasKey("Email");
+                    b.Property<int>("PepperVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("pepper_version");
+
+                    b.HasKey("ChallengeId");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("consumed_at IS NULL");
 
                     b.ToTable("email_verifications", (string)null);
                 });
