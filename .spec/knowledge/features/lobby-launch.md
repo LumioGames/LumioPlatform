@@ -19,7 +19,7 @@ metadata:
 
 ### 游戏目录
 
-`games` 表：`slug`（URL 安全、唯一）、`name`、`summary`、`cover_url`、`status`（`draft` / `published`）、`bundle_dir`（相对 `PLATFORM_GAMES_ROOT` 的目录名）、`server_ws_url`（v1 固定端点，`ws://` 或 `wss://`）、`subprotocol`、`contract_id`、`sort_order`、`created_at` / `updated_at`。后台 CRUD（admin-analytics.md）。
+`games` 表：`slug`（URL 安全、唯一）、`name`、`summary`、`cover_url`、`status`（`draft` / `published`）、`bundle_dir`（相对 `PLATFORM_GAMES_ROOT` 的目录名）、`sort_order`、`created_at` / `updated_at`。后台 CRUD（admin-analytics.md）。Endpoint 与六元 trust context 不进可在线编辑的目录表，其唯一来源是启动配置。
 
 发布一款游戏 = 运维把静态包目录（含 `index.html` 与 `contract.json`）放到 `PLATFORM_GAMES_ROOT/<bundle_dir>/` + 后台把记录置为 `published`。平台不做上传与构建。
 
@@ -44,6 +44,8 @@ metadata:
 
 签名载荷绑定 `serverAudience`、`gameId`、`gameReleaseId`、`contractId`、`roomId` 与 `allocationId`，Platform 返回前先与 allocator context 逐项比对；Game Server 再以自身 registry 的 trusted context 逐项校验。凭证不进 URL 或日志。allowlist 以 `allocationId` 精确绑定 scheme / host / port / path 与六元上下文，禁止 userinfo、query、fragment、redirect 和 wildcard host；生产仅返回 allowlisted `wss://`，`ws://` 只允许显式 test profile + loopback record。
 
+allowlist 唯一真值是启动时从环境变量层加载的 `Platform:Allocations:<gameSlug>` typed configuration（ASP.NET 键使用 `Platform__Allocations__...`）。每个 `AllocationEndpointRecord` 必须包含 allocationId、subprotocol、完整 endpoint、六元 context、`notAfter` 和 `localTest`；启动时完成 URL 规范化、精确匹配、非空/非 sentinel、过期、重复 allocationId 与 profile 校验，任一失败即启动失败。数据库 `games` 只保存展示/发布目录，不保存第二份 endpoint trust。
+
 ### 房间分配器接口
 
 ```csharp
@@ -53,7 +55,7 @@ record RoomEndpoint(string WsUrl, string Subprotocol, string ContractId, string 
                     string AllocationId);
 ```
 
-- v1 实现 `StaticEndpointAllocator`：从受信游戏目录返回 `games.server_ws_url`、固定 `serverAudience` / release / contract，并以 `roomId = slug` 生成 `allocationId`（一进程一房间）。客户端不能覆盖这些值。
+- v1 实现 `StaticEndpointAllocator`：按 `game.slug` 从 `Platform:Allocations` 的只读配置取固定 endpoint、subprotocol 和六元 context（一进程一房间）。客户端和 `games` 表都不能覆盖这些值。
 - 多房间时换实现（房间登记表 + 心跳，或外部 fleet 服务），由架构仓拓扑调研定案后另立 ADR；`launch` 应答形状不变。
 
 ### Bundle 与发布不变性

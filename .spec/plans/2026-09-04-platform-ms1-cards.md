@@ -34,7 +34,7 @@ metadata:
 ## 落单读回（2026-09-04，Owner 授权后由架构仓主会话写入并逐对象 GET 核对；bundle `wf-20260904-platform-ms1`，蓝图 `workflow-plan: platform-ms1/r1`）
 
 - 需求室：**RM-00012**「LumioPlatform · 游戏平台 MS-1（账号权威 / 大厅 / 反馈 / 后台）」（`01a06b90-0dcc-7b3d-b730-f891572423bc`，module `LumioPlatform`）。
-- 接口历史基线：架构仓 `origin/main` `c9f017b`（PR #77 已合入），但它**不含** audience-bound / account-auth exchange 的 Gate-0 扩展。扩展源固定为架构仓分支 `docs/2026-09-04-platform-route` 的 follow-up commit `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`；合入后再把 `contract/ORIGIN` 换成实际 main merge SHA。本计划不把未合入分支描述为当前 main。
+- 接口历史基线：架构仓 `origin/main` `c9f017b`（PR #77 已合入），但它**不含** audience-bound / account-auth exchange 的 Gate-0 扩展。扩展候选源是架构仓分支 `docs/2026-09-04-platform-route` 的 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8`；R0 只有在该内容合入并可从架构仓 `origin/main` 读回后才通过，并把实际可达 SHA 写入 `contract/ORIGIN`。本计划不把未合入分支描述为当前 main。
 - 验收项类型「需求验收」/ 初始状态「未提交」（`not_started`），`sourceKind=ai`、`sourceRef=workflow-plan: platform-ms1/r1/<临时号>`；18 条需求引用边经 `bindRequirementReference` 写入并由 `GET /requirement-graph?roomId=` 读回（`truncated=false`）。
 - 未归属里程碑、未指定 owner（API 取创建人）。卡正文里前置卡以「displayKey（临时号）」标注；下游前向引用仍用临时号，对照本表。
 
@@ -54,7 +54,7 @@ metadata:
 | P5-1 | R-00420 | `01a06b90-9dab-70c1-8193-15e5fbd1e59c` | 5a | LumioGame + LumioServer | backlog | 3 |
 | P5-2 | R-00421 | `01a06b90-9f99-77a3-a5a9-6ab40816933c` | 5b | LumioPlatform | backlog | 5 |
 
-表内状态是只读观察到的 Workflow 线上状态；本次不写 Workflow。除 R-00410 外，线上卡仍为 `backlog`；本仓分支中的文档 readiness 不等于线上状态。
+表内状态是只读观察到的 Workflow 线上状态；本次不写 Workflow。除 R-00410 外，线上卡仍为 `backlog`；本仓分支中的文档 readiness 不等于线上状态。R-00410 在 R0 尚为 backlog 时已进入 `in_progress` 是状态漂移，不构成 Gate 0 已通过；完成 R0 前不得继续或验收 P0-1。
 
 派活提示词与 wave 调度按架构仓 `LumioGameEngine/.spec/skills/cross-repo-delivery/SKILL.md`（本仓无该技能，主会话在架构仓执行）：Gate 0（R-00409）先冻结契约、治理和镜像基线；其后 W0 只有 P0-1（R-00410）；同 wave 异仓并行、同仓串行；每卡从派活评论钉定的 `origin/main` SHA 切 worktree。
 
@@ -101,7 +101,7 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 - 不得跨仓冒名；不得把未观测到的值写进证据。
 - 不得新建第二份账号库 / 口令哈希 / 凭证签发 / 协议真值 / DTO 类型；不得手改生成物。
 - 不得在源码、测试或脚本里硬编码开发机绝对路径、口令、连接串；外部配置只经环境变量，缺失时显式失败（不 Skip、不静默降级）。
-- 密钥 / 凭据 / 口令哈希不入库、不进日志、不进证据、不回显。
+- 私钥、口令、验证码与口令哈希不回显、不进日志或证据；`accountAuthCredential` / `admissionCredential` 只允许出现在 wire contract 规定的响应体或 Authorization 头，不进 URL、持久库、日志、审计或证据。
 - 不得在 CI 必过检查失败时以 admin 合入；不得 push 受保护分支；开 PR 等主 loop 审查。
 - 不得替 Owner 补产品决定：契约缺口一律升级为契约缺陷（交回物标 BLOCKED），不本地打补丁绕过。
 - 生产构建不得开启任何 dev-only 开关（`PLATFORM_EMAIL_ALLOW_CONSOLE`、`PLATFORM_REGISTRATION_PROFILE=test`）。
@@ -124,11 +124,11 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 
 ## 涉及范围
 
-架构仓 `docs/2026-09-04-platform-route` 的最终 Gate-0 source commit `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`、本仓 `contract/ORIGIN` 与契约镜像、`engine/wire/account-port-v1.json` / `platform-port-v1.json` 的生成摘要、镜像漂移 CI、ADR-061 与本计划的裁决记录。
+架构仓 `docs/2026-09-04-platform-route` 的 Gate-0 候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 及其合入后可从 `origin/main` 读回的实际 SHA、本仓 `contract/ORIGIN` 与契约镜像、`engine/wire/account-port-v1.json` / `platform-port-v1.json` 的生成摘要、镜像漂移 CI、ADR-061 与本计划的裁决记录。
 
 ## 验收标准
 
-- [ ] ADR-061 与两份 v1 扩展契约固定到架构仓 Gate-0 follow-up commit `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`；合入后记录实际 main merge SHA，本仓 ORIGIN 和镜像与所钉 revision 字节一致。
+- [ ] ADR-061 与两份 v1 扩展契约包含候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 的完整内容，已合入并可从架构仓 `origin/main` 的实际 SHA 读回；本仓 ORIGIN 和镜像与该可达 revision 字节一致。
 - [ ] Admission Ticket 的 audience / game / release / contract / room / allocation 字段及 300 秒 Bearer 重放边界由 Owner 明确；缺口不得由实现仓自行绕过。
 - [ ] CI 能在契约或生成物漂移时失败；Owner、版本、审计入口和本计划裁决记录可追溯。
 
@@ -146,7 +146,7 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 # P0-1 · [LumioPlatform] 仓库骨架：.NET 三项目 + 测试、web/ 脚手架、契约镜像、本地数据库脚本、CI
 
 - wave: 0 · priority: P0 · risk: medium
-- 前置：Gate 0 / R0 通过；架构仓 ADR-061 与两份扩展契约已固定到 Gate-0 follow-up source commit `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`（不得使用历史 `c9f017b`），本卡将该 revision 写入 `contract/ORIGIN`；合入后更新为实际 main merge SHA，并由 CI 做镜像漂移检查。
+- 前置：Gate 0 / R0 通过；架构仓 ADR-061 与两份扩展契约包含候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 的完整内容，已合入且可从 `origin/main` 读回（不得使用历史 `c9f017b`）。本卡只把该实际可达 SHA 写入 `contract/ORIGIN`，并由 CI 做镜像漂移检查。
 
 ## 涉及范围
 
@@ -171,13 +171,13 @@ Gate 4-5 / W5b  P5-2 部署、备份恢复、Drain/Rollback、密钥轮换、Soa
 - [ ] `dotnet run --project src/Lumio.Platform.App -c Release -- openapi-export src/Lumio.Platform.App/openapi/v1.json` 后 `git diff --exit-code` 为空；文档 `paths` 含 `/healthz`。
 - [ ] `pnpm -C web install --frozen-lockfile && pnpm -C web verify` 通过（lint / typecheck / vitest 1 条 / openapi:check）。
 - [ ] `PLATFORM_DB_CONNECTION_STRING=<dev> dotnet run --project src/Lumio.Platform.App` 打印 `PLATFORM_READY {...}`；`curl /healthz` 200；缺变量时 stderr `PLATFORM_INIT_FAILED` 且退出码 1。
-- [ ] `eng/verify-contract-mirror.sh` 通过；`contract/ORIGIN` 先钉 Gate-0 source revision `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`，架构变更合入后原子更新为实际 `origin/main` merge SHA。
+- [ ] `eng/verify-contract-mirror.sh` 通过；`contract/ORIGIN` 只钉 Gate-0 内容合入后可从架构仓 `origin/main` 读回的 SHA，不使用未合入 revision。
 - [ ] CI 三个 job 在 PR 上全绿（贴 run 链接）。
 - [ ] 不含任何业务端点、业务表、账号代码（本卡只搭骨架）。
 
 ## 依赖
 
-无（本仓首卡）。
+R0 / R-00409（硬 Gate）；Gate-0 契约内容必须已合入且可从架构仓 `origin/main` 读回。
 
 ## 接口
 
@@ -246,11 +246,12 @@ P0-1。
 ## 验收标准
 
 - [ ] `contract/account-port-v1.json` 当前冻结的全部 `testCases` / `invalidCases` 各有同名自动化测试且全过（贴测试名清单与输出；不硬编码旧用例计数）。
-- [ ] WS 登录返回 `accountAuthCredential/accountAuthExpiresAt`，六元字段均为 unbound sentinel；`ws_auth_credential_is_not_room_admittable` 在 Game Server 集成门中被拒。
+- [ ] WS 登录返回 `accountAuthCredential/accountAuthExpiresAt`，六元字段均为 unbound sentinel；本仓契约 fixture 断言它不能被当作 Room credential，真实 Game Server 拒绝证据由 P5-1 负责。
 - [ ] `VerifyAccountAuthCredential` 覆盖 malformed、bad signature、expired 与非 unbound 六元组；只有签名有效、未过期且六字段全为 sentinel 的 credential 产出 `AccountAuthPrincipal`，并保留 botToolContext。
 - [ ] `account_restart_stability`：宿主重启后同口令重登返回同一 `accountId`（Postgres 持久）。
 - [ ] `concurrent_first_login_converges`：100 个并发首次登录得到同一 `accountId`，`accounts` 恰一行。
 - [ ] `production` profile 下普通新 loginName 在 WS 端口被拒 `registration_requires_platform`；`test` profile 下照旧创建。
+- [ ] WS `login_or_register` 按来源 IP、loginName 与已解析 accountId 分区限流；超过配置阈值返回 `rate_limited`，不泄露账号是否存在且不创建/修改账号、AccountEntity 或凭证。
 - [ ] `/account` Origin、帧大小、并发连接、空闲时间、发送队列和慢消费者限制均有反例测试，超限有确定错误且不阻塞其他连接。
 - [ ] grep 证明：`Lumio.Platform.Account` 无 JSON 文件存储、无第二份哈希 / 签名实现；日志与测试输出不含口令、哈希、凭证原文。
 - [ ] `PLATFORM_READY` 行 `contractIds` 含 `lumio.account-port.v1`，`accountPort` = `/account`。
@@ -344,28 +345,29 @@ P2-1、P2-2。
 <!-- card:P3-2 -->
 # P3-2 · [LumioPlatform] 大厅与启动：games 表 API、`/games/<slug>/` 静态托管、launch 端口签发凭证、StaticEndpointAllocator
 
-- wave: 3 · priority: P0 · risk: medium
+- wave: 3 · priority: P0 · risk: high（Bearer 验证 / 签发 / endpoint trust，合入前单审）
 - 前置：P2-1、P2-2 合入。
 
 ## 涉及范围
 
-`src/Lumio.Platform.App/Lobby/`（`GET /api/games`、`GET /api/games/{slug}`、`POST /api/games/{slug}/launch`、静态托管中间件）、`src/Lumio.Platform/Lobby/`（`IRoomAllocator`、`StaticEndpointAllocator`、`GameCatalog`）、`tests/Lumio.Platform.Tests/Lobby/`、`web/src/features/lobby/`（真接口接线）、生成物重生成。
+`src/Lumio.Platform.App/Lobby/`（`GET /api/games`、`GET /api/games/{slug}`、`POST /api/games/{slug}/launch`、静态托管中间件）、`src/Lumio.Platform/Lobby/`（`IRoomAllocator`、`StaticEndpointAllocator`、`AllocationTrustOptions` / `AllocationEndpointRecord`、`GameCatalog`）、`tests/Lumio.Platform.Tests/Lobby/`、`web/src/features/lobby/`（真接口接线）、生成物重生成。
 
 ## 怎么做（`features/lobby-launch.md`）
 
 - 静态托管只对 `published` slug 生效，根目录 `PLATFORM_GAMES_ROOT`，缺失时启动失败（退出码 1）。
 - launch：认证必须二选一：浏览器 Cookie，或 WS 签发的 unbound `accountAuthCredential` Bearer（Bot / 工具 / RM-00011）；两者同时出现拒 `invalid_request`。调用方只提交 path slug 且 body 为空，不得提供 allocation claims。Bearer 路径验签、校验 expiry / unbound sentinel 并读取账号与 botToolContext；两条路径都重新查询账号状态。
 - 分配器返回 `serverAudience`、`gameId`、`gameReleaseId`、`contractId`、`roomId`、`allocationId`；这些服务端字段连同 signer 自有 identity / 时间 / nonce 进入 Room-bound Admission Ticket。Platform 返回前逐项比对 allocation context 与 ticket，Game Server 再逐项校验。凭证不进 URL / 日志，生产只允许 allowlisted `wss://`。
+- endpoint trust 的唯一来源是启动时从环境变量层加载的 `Platform:Allocations:<gameSlug>` typed configuration（ASP.NET 键使用 `Platform__Allocations__...`）；每条 `AllocationEndpointRecord` 固定 allocationId、subprotocol、完整 WSS endpoint、六元 context、`notAfter` 与 `localTest`。配置缺失、重复、过期、URL 组件或 context 不合法时宿主启动失败；`games` 表和客户端不得另存/覆盖 endpoint trust。
 - 游戏包必须是同源、第一方、不可变发布物；发布记录绑定唯一 release/hash，launch 不接受客户端提供的地址或版本。
 - Cookie launch 要求 CSRF token、严格 Origin / Fetch Metadata；Bearer launch 不依赖 Cookie CSRF，但两条路径都按 IP / 账号 / 游戏分区限流。客户端不得覆盖 allocator 返回的任何字段。
 
 ## 验收标准
 
-- [ ] `contract/platform-port-v1.json` launch 相关用例全过；应答字段与契约一致。
-- [ ] `bot_exchanges_account_auth_for_bound_admission`：Bot 经 WS 取得 unbound account-auth Bearer，只提交 slug 调 Launch，换得保留 botToolContext 的 Room-bound credential 并通过 Game Server 验票；Cookie + Bearer 同时出现拒 `invalid_request`。
+- [ ] `contract/platform-port-v1.json` launch 相关用例的 Platform-owned 部分全过；本卡以契约 fixture 本地解形/验签/六元比较，不依赖尚未交付的 LumioServer 实现。真实跨仓验票由 P5-1 验收。
+- [ ] `bot_exchanges_account_auth_for_bound_admission`：Bot 经 WS 取得 unbound account-auth Bearer，只提交 slug 调 Launch，换得保留 botToolContext 的 Room-bound credential并通过本仓契约 fixture；Cookie + Bearer 同时出现拒 `invalid_request`。真实 Game Server 验票由 P5-1 验收。
 - [ ] body / query / header 提交任一 allocation 或 endpoint hint 均拒 `invalid_request`；未命中精确 allowlist、userinfo、query、fragment、redirect、wildcard host 或非测试公网 `ws://` 均拒 `untrusted_ws_endpoint`。
 - [ ] 未发布游戏：列表不出现、`/games/<slug>/` 404、launch `game_not_published`。
-- [ ] launch 两次得到不同 nonce 的凭证；用 `LumioServer` 的 `verify_admission` 参考实现（或本仓契约测试的解形 + 验签）验证通过。
+- [ ] launch 两次得到不同 nonce 的凭证；用本仓契约 fixture 做解形、验签、非 sentinel 与六元比较并验证通过。
 - [ ] 大厅页展示已发布游戏并能跳转 `/games/<slug>/`。
 - [ ] 收口门槛全绿。
 
@@ -376,7 +378,7 @@ P2-1、P2-2。
 ## 接口
 
 - Consumes：Cookie principal 或 `AccountRuntime.VerifyAccountAuthCredential` 的 `AccountAuthPrincipal`；`IssueAdmissionCredential(AccountAuthPrincipal, AdmissionAllocationClaims)`。P3-2 仅将受信 `RoomEndpoint` 的六元 context 映射为 claims，不能传入 identity / botToolContext / issuedAt / expiresAt / nonce。
-- Produces：`IRoomAllocator.AllocateAsync(Game, AccountId, ct) → RoomEndpoint(WsUrl, Subprotocol, ContractId, ServerAudience, GameId, GameReleaseId, RoomId, AllocationId)`；支持 Cookie / account-auth Bearer 二选一的 `/api/games/*`。
+- Produces：`IRoomAllocator.AllocateAsync(Game, AccountId, ct) → RoomEndpoint(WsUrl, Subprotocol, ContractId, ServerAudience, GameId, GameReleaseId, RoomId, AllocationId)`；`AllocationTrustOptions { IReadOnlyDictionary<string, AllocationEndpointRecord> Allocations }`（key = gameSlug，record 固定 allocationId / endpoint / subprotocol / 六元 context / notAfter / localTest）；支持 Cookie / account-auth Bearer 二选一的 `/api/games/*`。
 
 ---
 
@@ -384,7 +386,7 @@ P2-1、P2-2。
 # P3-3 · [LumioClient] 浏览器游戏页改为经平台 launch 端口取地址与凭证
 
 - wave: 3 · priority: P1 · risk: medium
-- 前置：Gate 0 / R0 通过，架构仓 `platform-port-v1.json` 已固定到 Gate-0 follow-up source commit `3b5717eb9af6ce822f0b996d0dff7c6b6bc5ef5f`（不得使用历史 `c9f017b`）。本卡不依赖 P3-2 合入，但不得绕过 Gate 0；合入后消费实际 main merge SHA，联调在 P5-1。
+- 前置：Gate 0 / R0 通过，架构仓 `platform-port-v1.json` 已包含候选 commit `a8cb9d3c8821d3f5ef51577a34cd586afb9908a8` 的完整内容并可从 `origin/main` 实际 SHA 读回（不得使用历史 `c9f017b`）。本卡不依赖 P3-2 合入，但不得绕过 Gate 0；联调在 P5-1。
 
 ## 涉及范围
 
