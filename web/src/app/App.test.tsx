@@ -48,3 +48,18 @@ test('sends anonymous profile visits to the login shell', () => {
   expect(screen.getByRole('heading', { name: '欢迎回来' })).toBeInTheDocument();
   expect(screen.getByLabelText('邮箱或用户名')).toBeInTheDocument();
 });
+
+test('renders roadmap and game launch surfaces', () => {
+  renderAt('/roadmap');
+  expect(screen.getByRole('heading', { name: 'Roadmap' })).toBeInTheDocument();
+  expect(screen.getByText('账号体系与大厅上线')).toBeInTheDocument();
+  cleanup();
+  renderAt('/launch-fail/voxel-bomber');
+  expect(screen.getByRole('heading', { name: '现在进不去，稍后再试' })).toBeInTheDocument();
+});
+
+test('published lobby game exposes a launch action', () => {
+  renderAt('/');
+  expect(screen.getByRole('button', { name: '开始游戏' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Roadmap' })).toBeInTheDocument();
+});
