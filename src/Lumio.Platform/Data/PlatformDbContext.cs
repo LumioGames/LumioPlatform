@@ -29,6 +29,7 @@ public sealed class PlatformDbContext(DbContextOptions<PlatformDbContext> option
             entity.Property(value => value.LoginName).HasColumnName("login_name").HasMaxLength(32).IsRequired();
             entity.Property(value => value.Email).HasColumnName("email").HasMaxLength(254);
             entity.Property(value => value.EmailVerifiedAt).HasColumnName("email_verified_at").HasColumnType("timestamp with time zone");
+            entity.Property(value => value.SecurityVersion).HasColumnName("security_version").HasDefaultValue(1L);
             entity.Property(value => value.AvatarId).HasColumnName("avatar_id");
             entity.Property(value => value.Role).HasColumnName("role").IsRequired();
             entity.Property(value => value.Status).HasColumnName("status").IsRequired();
@@ -53,12 +54,16 @@ public sealed class PlatformDbContext(DbContextOptions<PlatformDbContext> option
         modelBuilder.Entity<EmailVerification>(entity =>
         {
             entity.ToTable("email_verifications");
-            entity.HasKey(value => value.Email);
+            entity.HasKey(value => value.ChallengeId);
+            entity.Property(value => value.ChallengeId).HasColumnName("challenge_id").IsRequired();
             entity.Property(value => value.Email).HasColumnName("email").HasMaxLength(254);
-            entity.Property(value => value.CodeHash).HasColumnName("code_hash").HasMaxLength(64).IsRequired();
+            entity.Property(value => value.CodeHmac).HasColumnName("code_hmac").HasMaxLength(64).IsRequired();
+            entity.Property(value => value.PepperVersion).HasColumnName("pepper_version");
             entity.Property(value => value.ExpiresAt).HasColumnName("expires_at").HasColumnType("timestamp with time zone");
-            entity.Property(value => value.Attempts).HasColumnName("attempts");
+            entity.Property(value => value.Attempts).HasColumnName("attempts").HasDefaultValue(0);
+            entity.Property(value => value.ConsumedAt).HasColumnName("consumed_at").HasColumnType("timestamp with time zone");
             entity.Property(value => value.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp with time zone");
+            entity.HasIndex(value => value.Email).IsUnique().HasFilter("consumed_at IS NULL");
         });
 
         modelBuilder.Entity<LoginAttempt>(entity =>

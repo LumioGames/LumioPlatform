@@ -27,6 +27,7 @@ namespace Lumio.Platform.Data.Migrations
                     login_name = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     email = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: true),
                     email_verified_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    security_version = table.Column<long>(type: "bigint", nullable: false, defaultValue: 1L),
                     avatar_id = table.Column<int>(type: "integer", nullable: false),
                     role = table.Column<string>(type: "text", nullable: false),
                     status = table.Column<string>(type: "text", nullable: false),
@@ -42,15 +43,18 @@ namespace Lumio.Platform.Data.Migrations
                 name: "email_verifications",
                 columns: table => new
                 {
+                    challenge_id = table.Column<string>(type: "text", nullable: false),
                     email = table.Column<string>(type: "character varying(254)", maxLength: 254, nullable: false),
-                    code_hash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    code_hmac = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    pepper_version = table.Column<int>(type: "integer", nullable: false),
                     expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    attempts = table.Column<int>(type: "integer", nullable: false),
+                    attempts = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    consumed_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_email_verifications", x => x.email);
+                    table.PrimaryKey("PK_email_verifications", x => x.challenge_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -244,6 +248,13 @@ namespace Lumio.Platform.Data.Migrations
                 name: "IX_audit_log_actor_account_id",
                 table: "audit_log",
                 column: "actor_account_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_email_verifications_email",
+                table: "email_verifications",
+                column: "email",
+                unique: true,
+                filter: "consumed_at IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_events_account_id",
