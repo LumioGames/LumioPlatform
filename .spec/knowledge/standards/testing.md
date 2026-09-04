@@ -27,7 +27,7 @@ metadata:
 
 ## 契约用例镜像
 
-- `contract/account-port-v1.json` 的 `testCases` / `invalidCases`（7 + 11 条）**逐条**有自动化测试或在验收报告里逐条对应证据（契约 `fixturesNote` 原文要求）。测试名与用例 `name` 一致，便于对账。
+- `contract/account-port-v1.json` 的 `testCases` / `invalidCases`（7 + 12 条）**逐条**有自动化测试或在验收报告里逐条对应证据（契约 `fixturesNote` 原文要求）。测试名与用例 `name` 一致，便于对账。
 - `contract/platform-port-v1.json` 同口径。
 - 契约镜像与架构仓 `origin/main` 字节一致由 `eng/verify-contract-mirror.sh` 保证；漂移 = 收口失败。
 

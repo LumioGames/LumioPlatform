@@ -48,7 +48,7 @@ LumioPlatform/
 ├── contract/                         ORIGIN（架构仓提交号）+ account-port-v1.json + platform-port-v1.json 镜像
 ├── src/Lumio.Platform/               领域与数据：EF Core `PlatformDbContext`、实体、迁移（`Data/`）、各功能的领域服务
 ├── src/Lumio.Platform.Account/       账号域（从 LumioServer/account-server/src/Lumio.Server.Account 搬入，见 account.md）
-├── src/Lumio.Platform.App/           宿主：`Program`（子命令分发）、`PlatformHost.Build(args, options, requireDatabase)`、`PlatformOptions`（只读环境变量）、`OpenApiExport`、端点分组（Account/ Lobby/ Feedback/ Admin/ Track/）、WS 端口适配（AccountProtocolServer 搬入）、`openapi/v1.json`（入库生成物）、`wwwroot/`（不入库，由 web 构建产出）
+├── src/Lumio.Platform.App/           宿主：`Program`（子命令分发）、`PlatformHost.Build(args, options, requireDatabase)`、`PlatformOptions`（只读环境变量）、`OpenApiExport`、端点分组（Account/ Lobby/ Feedback/ Admin/ Track/）、`AccountPort/`（AccountProtocolServer 搬入，挂 `/account`）、`openapi/v1.json`（入库生成物）、`wwwroot/`（不入库，由 web 构建产出）
 ├── tests/Lumio.Platform.Tests/       xunit.v3；宿主测试起真进程；契约用例逐条对应
 ├── web/                              React 19 + TS + Vite（`pnpm`）；`build` 输出到 `../src/Lumio.Platform.App/wwwroot`；`verify` = lint + typecheck + test + openapi:check
 ├── docker-compose.yml                postgres:17 + platform（Dockerfile 多阶段：pnpm build → dotnet publish）
@@ -95,7 +95,7 @@ LumioPlatform/
 
 ## 非目标（v1）
 
-匹配 / 多房间分配器实现、Steam / 第三方登录、找回 / 改密、聊天 / 好友 / 排行、CDN、多实例部署、在线吊销凭证、限流（暴露公网前必补，P4-2）。
+匹配 / 多房间分配器实现、Steam / 第三方登录、找回 / 改密、聊天 / 好友 / 排行、CDN、多实例部署、在线吊销凭证、限流（暴露公网前必补，P5-2）。
 
 ## 待解决
 

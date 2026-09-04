@@ -24,8 +24,6 @@
 </div>
 <!-- lumio-community:end -->
 
-## 架构基线
-
 ## 职责
 
 - **唯一账号权威**：邮箱注册、AccountId / UID / 用户名 / 默认头像、Argon2id 口令、Ed25519 准入凭证签发、Bot 命名空间设防；一库两端口（WS `lumio-account-v1` 契约端口 + HTTP `/api/account/*`）。

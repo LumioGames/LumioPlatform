@@ -24,8 +24,6 @@
 </div>
 <!-- lumio-community:end -->
 
-## 架构基线
-
 ## Responsibilities
 
 - **Single account authority**: e-mail registration, AccountId / UID / login name / default avatars, Argon2id passwords, Ed25519 admission-credential issuance, Bot-namespace enforcement; one store, two ports (the `lumio-account-v1` WebSocket contract port plus HTTP `/api/account/*`).

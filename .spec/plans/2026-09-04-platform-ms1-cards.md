@@ -143,7 +143,7 @@ P0-1。
 ---
 
 <!-- card:P2-1 -->
-# P2-1 · [LumioPlatform] 账号域搬入：Lumio.Server.Account 原码 + AccountWorld + Postgres 存储 + WS `/account` 端口，account-port-v1 用例 18 条全过
+# P2-1 · [LumioPlatform] 账号域搬入：Lumio.Server.Account 原码 + AccountWorld + Postgres 存储 + WS `/account` 端口，account-port-v1 用例 19 条全过
 
 - wave: 2 · priority: P0 · risk: high（鉴权 / 安全面，合入前单审）
 - 前置：P1-1 合入；`LumioServer/account-server/` 源码钉定 `origin/main` 提交号写在派活评论。
@@ -156,13 +156,13 @@ P0-1。
 
 - `AccountWorld` / `AccountRuntime` / `CredentialStore` / `AdmissionCredential` / `BotToolCredential` / `LumioBin` / `LumioSignature` / `Argon2idPasswordHasher` / `LoginNameRules` 原样搬入，不重构；`AccountIdentityComponent` 扩展 `uid` / `email` / `avatarId` / `role` / `status`。
 - 持久层：`PostgresAccountStore` 用 P1-1 的 `Account` / `AccountCredential` 表；`AccountWorld` 按 AccountId 惰性加载；并发首次注册靠唯一约束 + 事务重试收敛。
-- 注册策略 `PLATFORM_REGISTRATION_PROFILE`：`test` 照 ADR-054；`production` 非 Bot 命名空间的新 loginName 在 WS 端口拒 `registration_requires_platform`（码来自 `platform-port-v1.json`，WS `Error` 消息携带）。
+- 注册策略 `PLATFORM_REGISTRATION_PROFILE`：`test` 照 ADR-054；`production` 非 Bot 命名空间的新 loginName 在 WS 端口拒 `registration_requires_platform`（码来自 `account-port-v1.json`，ADR-061 授权扩展；WS `Error` 消息携带）。
 - 登录尝试写 `login_attempts(port = ws)`；`status = banned` 拒 `account_banned`。
 - 密钥仍只从 `LUMIO_ACCOUNT_*` 环境变量读。
 
 ## 验收标准
 
-- [ ] `contract/account-port-v1.json` 的 7 条 `testCases` + 11 条 `invalidCases` 各有同名自动化测试且全过（贴测试名清单与输出）。
+- [ ] `contract/account-port-v1.json` 的 7 条 `testCases` + 12 条 `invalidCases` 各有同名自动化测试且全过（贴测试名清单与输出）。
 - [ ] `account_restart_stability`：宿主重启后同口令重登返回同一 `accountId`（Postgres 持久）。
 - [ ] `concurrent_first_login_converges`：100 个并发首次登录得到同一 `accountId`，`accounts` 恰一行。
 - [ ] `production` profile 下普通新 loginName 在 WS 端口被拒 `registration_requires_platform`；`test` profile 下照旧创建。
