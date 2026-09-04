@@ -60,7 +60,7 @@ dotnet restore build.proj --locked-mode && dotnet build build.proj -c Release --
 ## 文档入口
 
 - 中心文档与调度：[`.spec/AGENTS.md`](.spec/AGENTS.md)；知识导航：[`.spec/knowledge/README.md`](.spec/knowledge/README.md)；硬红线：[`.spec/rules/system.md`](.spec/rules/system.md)。
-- 设计：[平台总览](.spec/knowledge/features/platform.md) · [账号域](.spec/knowledge/features/account.md) · [大厅与启动](.spec/knowledge/features/lobby-launch.md) · [反馈](.spec/knowledge/features/feedback.md) · [后台与埋点](.spec/knowledge/features/admin-analytics.md) · [网页视觉](.spec/knowledge/features/platform-ui.md)。
+- 设计：[平台总览](.spec/knowledge/features/platform.md) · [账号域](.spec/knowledge/features/account.md) · [大厅与启动](.spec/knowledge/features/lobby-launch.md) · [反馈](.spec/knowledge/features/feedback.md) · [后台与埋点](.spec/knowledge/features/admin-analytics.md) · [网页视觉](.spec/knowledge/features/platform-ui.md) · [高保真原型](web/docs/prototype/README.md)。
 - 边界：[`repository-architecture.md`](.spec/knowledge/standards/repository-architecture.md)；决策：[`.spec/decisions/`](.spec/decisions/README.md)；实施蓝图：[`.spec/plans/2026-09-04-platform-ms1-cards.md`](.spec/plans/2026-09-04-platform-ms1-cards.md)。
 
 ## Agent 接入

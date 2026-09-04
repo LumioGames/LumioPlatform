@@ -32,3 +32,4 @@
 | [0002](0002-database-tests-fail-loudly.md) | 需要数据库的测试缺连接串即失败，不跳过；连接串只来自环境变量 | 生效 |
 | [0003](0003-no-aspnet-identity.md) | 不用 ASP.NET Core Identity；账号域沿用 account-server 的 Argon2id 凭证库与自有账号模型 | 生效 |
 | [0004](0004-platform-ui-from-gametech.md) | 平台网页视觉继承 GameTech 身份色与品牌标，不搬视频画布与白板主题 | 生效 |
+| [0005](0005-platform-ui-hifi-prototype.md) | 玩家端与运营后台的屏幕级视觉以 web/docs/prototype 高保真原型为准 | 生效 |

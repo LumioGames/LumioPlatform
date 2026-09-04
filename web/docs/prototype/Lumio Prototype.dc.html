@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet"><style>body{margin:0;background:#f7faff;font-family:"Noto Sans SC",Inter,system-ui,sans-serif;color:#1e2a3a}a{color:#6171f0;text-decoration:none}a:hover{color:#243056}input,textarea,select,button{font:inherit;color:inherit}button{cursor:pointer}input:focus,textarea:focus,select:focus{outline:none;border-color:#7c8cff;box-shadow:0 0 0 3px rgba(124,140,255,.22)}@keyframes lm-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes lm-float{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(-9px)}}@keyframes lm-spin{to{transform:rotateX(-24deg) rotateZ(315deg)}}</style></helmet>
+<div style="min-height:100dvh;display:flex;flex-direction:column">
+
+<div style="position:sticky;top:0;z-index:30;height:56px;display:flex;align-items:center;gap:20px;padding:0 32px;background:rgba(249,251,255,.93);border-bottom:1px solid #e7ecf6;backdrop-filter:blur(8px)">
+<button onClick="{{ goLobby }}" style="display:inline-flex;align-items:center;gap:9px;background:none;border:0;padding:0">
+<span style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(150deg,#7c8cff,#9aa6ff);box-shadow:0 10px 24px -8px rgba(124,140,255,.7),inset 0 1px 0 rgba(255,255,255,.4)"><span style="display:grid;grid-template-columns:repeat(3,4px);grid-template-rows:repeat(3,4px);gap:1.3px"><i style="background:#fff;border-radius:1px"></i><i style="background:#fff;border-radius:1px;opacity:.35"></i><i style="background:#fff;border-radius:1px"></i><i style="background:#fff;border-radius:1px;opacity:.35"></i><i style="background:#fff;border-radius:1px"></i><i style="background:#fff;border-radius:1px;opacity:.35"></i><i style="background:#fff;border-radius:1px"></i><i style="background:#fff;border-radius:1px;opacity:.35"></i><i style="background:#fff;border-radius:1px"></i></span></span>
+<span style="display:flex;flex-direction:column;line-height:1.08;text-align:left"><span style="font:800 15px Inter;letter-spacing:.02em">Lumio</span><span style="font:700 8px Inter;letter-spacing:.22em;color:#9aa6be;margin-top:1px">GAMES</span></span></button>
+<div style="display:flex;align-items:center;gap:6px;margin-left:auto;font:500 13px 'Noto Sans SC'">
+<button onClick="{{ goLobby }}" style="border:0;padding:6px 12px;border-radius:10px;background:{{ navLobbyBg }};color:{{ navLobby }};font:700 13px 'Noto Sans SC'">大厅</button>
+<button onClick="{{ goFeedback }}" style="border:0;padding:6px 12px;border-radius:10px;background:{{ navFeedbackBg }};color:{{ navFeedback }};font:700 13px 'Noto Sans SC'">反馈</button>
+<button onClick="{{ goRoadmap }}" style="border:0;padding:6px 12px;border-radius:10px;background:{{ navRoadmapBg }};color:{{ navRoadmap }};font:700 13px 'Noto Sans SC'">Roadmap</button>
+<a href="#" style="padding:6px 12px;color:#6b7894">开源引擎 ↗</a><button onClick="{{ openGroup }}" style="border:0;padding:6px 12px;border-radius:10px;background:none;color:#6b7894;font:500 13px 'Noto Sans SC'">开发者交流群</button><span style="width:8px"></span>
+<sc-if value="{{ isGuest }}" hint-placeholder-val="{{ true }}"><span style="display:flex;gap:12px">
+<button onClick="{{ goLogin }}" style="display:inline-flex;align-items:center;min-height:36px;padding:0 16px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 13px 'Noto Sans SC'">登录</button>
+<button onClick="{{ goRegister }}" style="display:inline-flex;align-items:center;min-height:36px;padding:0 16px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 14px 30px -12px rgba(97,113,240,.8);font:700 13px 'Noto Sans SC'">注册</button></span></sc-if>
+<sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:10px">
+<sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}"><button onClick="{{ goAdmin }}" style="display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;background:#eaf0ff;border:1px solid #c9d3f5;color:#6171f0;font:700 12px 'Noto Sans SC'">后台</button></sc-if>
+<button onClick="{{ goMe }}" style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e7ecf6;border-radius:999px;padding:3px 12px 3px 3px"><span style="width:28px;height:28px;border-radius:50%;background:#eaf0ff;display:grid;place-items:center;font-size:15px">{{ myAvatar }}</span><span style="font:700 13px Inter;color:#243056">{{ myName }}</span></button>
+<button onClick="{{ logout }}" style="background:none;border:0;padding:0;color:#9aa6be;font:500 12px 'Noto Sans SC'">退出</button></span></sc-if>
+</div></div>
+
+<div style="flex:1;padding-bottom:64px">
+
+<sc-if value="{{ isLobby }}" hint-placeholder-val="{{ true }}">
+<div style="animation:lm-in .32s ease both">
+<div style="position:relative;overflow:hidden;background:linear-gradient(150deg,#eef1ff,#e6f7f2)">
+<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(124,140,255,.1) 1px,transparent 1px),linear-gradient(90deg,rgba(124,140,255,.1) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(160deg,#000 8%,transparent 62%);-webkit-mask-image:linear-gradient(160deg,#000 8%,transparent 62%)"></div>
+<div style="position:absolute;right:120px;top:34px;width:54px;height:54px;border-radius:12px;background:#7c8cff;opacity:.55;animation:lm-float 6s ease-in-out infinite"></div>
+<div style="position:absolute;right:210px;top:96px;width:36px;height:36px;border-radius:9px;background:#5de2c6;opacity:.6;animation:lm-float 7.5s ease-in-out .6s infinite"></div>
+<div style="position:absolute;right:70px;bottom:38px;width:30px;height:30px;border-radius:8px;background:#ffb86b;opacity:.75;animation:lm-float 5.4s ease-in-out .3s infinite"></div>
+<div style="position:absolute;right:290px;bottom:26px;width:22px;height:22px;border-radius:6px;background:#ff7ea6;opacity:.6;animation:lm-float 6.8s ease-in-out 1s infinite"></div>
+<div style="position:relative;width:min(100% - 64px,1120px);margin:0 auto;padding:48px 0 40px">
+<div style="display:flex;align-items:flex-start;gap:28px;flex-wrap:wrap">
+<div style="width:96px;height:96px;border-radius:26px;display:grid;place-items:center;background:linear-gradient(150deg,#7c8cff,#9aa6ff);box-shadow:0 26px 52px -18px rgba(124,140,255,.8),inset 0 2px 0 rgba(255,255,255,.45);flex:none"><span style="display:grid;grid-template-columns:repeat(3,14px);grid-template-rows:repeat(3,14px);gap:4px"><i style="background:#fff;border-radius:3px"></i><i style="background:#fff;border-radius:3px;opacity:.35"></i><i style="background:#fff;border-radius:3px"></i><i style="background:#fff;border-radius:3px;opacity:.35"></i><i style="background:#fff;border-radius:3px"></i><i style="background:#fff;border-radius:3px;opacity:.35"></i><i style="background:#fff;border-radius:3px"></i><i style="background:#fff;border-radius:3px;opacity:.35"></i><i style="background:#fff;border-radius:3px"></i></span></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font:900 44px/1.05 'Noto Sans SC';color:#243056;letter-spacing:-.01em">开源体素游戏平台</div>
+<div style="display:flex;align-items:center;gap:10px;font:700 14px Inter;letter-spacing:.18em;color:#9aa6be">LUMIO GAMES</div>
+<div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap">
+<button onClick="{{ startVoxel }}" style="display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 24px;border-radius:14px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8),inset 0 1px 0 rgba(255,255,255,.35);font:700 15px 'Noto Sans SC'"><span style="width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.28);display:grid;place-items:center;font-size:11px">▶</span>开始游戏</button>
+<a href="#" style="display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 22px;border-radius:14px;background:#fff;border:1px solid #e7ecf6;box-shadow:0 10px 30px -18px rgba(53,68,120,.4);font:700 15px 'Noto Sans SC';color:#1e2a3a"><span style="width:20px;height:20px;border-radius:6px;background:#eaf0ff;display:grid;place-items:center;font-size:11px;color:#6171f0">{ }</span>开源引擎 ↗</a>
+<button onClick="{{ goRoadmap }}" style="display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 22px;border-radius:14px;background:#f3f6ff;border:1px solid #c9d3f5;color:#6171f0;font:700 15px 'Noto Sans SC'"><span style="width:20px;height:20px;border-radius:6px;background:#fff;display:grid;place-items:center;font-size:11px">◷</span>Roadmap</button>
+</div></div></div>
+</div></div>
+
+<div style="width:min(100% - 64px,1120px);margin:0 auto;padding:32px 0 0">
+<div style="display:flex;align-items:baseline;gap:12px"><div style="font:900 28px 'Noto Sans SC';color:#243056">大厅</div></div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:24px;margin-top:20px">
+
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);overflow:hidden;display:flex;flex-direction:column">
+<div style="position:relative;aspect-ratio:16/10;background:linear-gradient(150deg,#e3e7ff,#c9d0ff);overflow:hidden">
+<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);background-size:28px 28px"></div>
+<div style="position:absolute;left:16px;top:16px;padding:4px 12px;border-radius:999px;background:#fff;font:700 12px 'Noto Sans SC';color:#6171f0;box-shadow:0 6px 16px -8px rgba(53,68,120,.4)">对战</div>
+<div style="position:absolute;left:52%;top:26%;width:56px;height:56px;border-radius:14px;background:#8f9bff;box-shadow:0 18px 30px -14px rgba(53,68,120,.5);animation:lm-float 6s ease-in-out infinite"></div>
+<div style="position:absolute;left:70%;top:52%;width:40px;height:40px;border-radius:11px;background:#a6b0ff;animation:lm-float 7.2s ease-in-out .5s infinite"></div>
+<div style="position:absolute;right:18px;bottom:16px;display:flex;align-items:center;gap:8px;padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.94);font:700 12px 'Noto Sans SC';color:#1f8a5b"><i style="width:7px;height:7px;border-radius:50%;background:#1f8a5b;box-shadow:0 0 0 3px rgba(31,138,91,.18)"></i>{{ vbOnline }} 人在玩</div></div>
+<div style="padding:16px;display:flex;flex-direction:column;gap:10px;flex:1">
+<div style="display:flex;align-items:center;gap:8px"><div style="font:700 18px 'Noto Sans SC';color:#243056">体素炸弹人</div><span style="padding:2px 9px;border-radius:999px;background:#e3f7ed;color:#1f8a5b;font:700 12px 'Noto Sans SC'">已发布</span></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;font:500 12px 'Noto Sans SC';color:#6b7894"><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f7faff;border:1px solid #e7ecf6">🗓 2026-09-04 更新</span><span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#f7faff;border:1px solid #e7ecf6">⏱ 约 4 分钟一局</span></div>
+<div style="margin-top:2px;padding:10px 12px;border-radius:12px;background:#f7faff;border:1px solid #e7ecf6;display:flex;align-items:center;gap:10px">
+<div style="display:flex">{{ roomStack }}</div>
+<div style="font:500 12px 'Noto Sans SC';color:#6b7894;line-height:1.35">{{ roomId }} · <b style="color:#243056">{{ roomFill }}</b></div></div>
+<div style="display:flex;gap:10px;margin-top:auto;padding-top:10px">
+<button onClick="{{ startVoxel }}" style="flex:1;display:inline-flex;align-items:center;justify-content:center;min-height:40px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8),inset 0 1px 0 rgba(255,255,255,.35);font:700 14px 'Noto Sans SC'">开始游戏</button>
+<button onClick="{{ openShare }}" style="display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:12px;background:#f3f6ff;border:1px solid #c9d3f5;color:#6171f0;font:700 14px 'Noto Sans SC'">分享</button></div></div></div>
+
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);overflow:hidden;display:flex;flex-direction:column;opacity:.78">
+<div style="position:relative;aspect-ratio:16/10;background:linear-gradient(150deg,#e2f7f1,#c6efe4);overflow:hidden"><div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);background-size:28px 28px"></div><div style="position:absolute;left:16px;top:16px;padding:4px 12px;border-radius:999px;background:#fff;font:700 12px 'Noto Sans SC';color:#1f8a5b">策略</div><div style="position:absolute;left:56%;top:30%;width:52px;height:52px;border-radius:13px;background:#67dcc2;animation:lm-float 6.6s ease-in-out infinite"></div></div>
+<div style="padding:16px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;gap:8px"><div style="font:700 18px 'Noto Sans SC';color:#243056">起床战争俯视改编</div><span style="padding:2px 9px;border-radius:999px;background:#fff;border:1px solid #e7ecf6;color:#9aa6be;font:700 12px 'Noto Sans SC'">即将推出</span></div><button style="align-self:flex-start;min-height:36px;padding:0 14px;border-radius:12px;background:#f7faff;border:1px solid #e7ecf6;color:#9aa6be;font:700 13px 'Noto Sans SC'">敬请期待</button></div></div>
+
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);overflow:hidden;display:flex;flex-direction:column;opacity:.78">
+<div style="position:relative;aspect-ratio:16/10;background:linear-gradient(150deg,#ffeef3,#ffd9e4);overflow:hidden"><div style="position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px);background-size:28px 28px"></div><div style="position:absolute;left:16px;top:16px;padding:4px 12px;border-radius:999px;background:#fff;font:700 12px 'Noto Sans SC';color:#c2415b">撤离</div><div style="position:absolute;left:58%;top:28%;width:52px;height:52px;border-radius:13px;background:#ff7ea6;animation:lm-float 5.8s ease-in-out infinite"></div></div>
+<div style="padding:16px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;gap:8px"><div style="font:700 18px 'Noto Sans SC';color:#243056">逃离鸭科夫</div><span style="padding:2px 9px;border-radius:999px;background:#fff;border:1px solid #e7ecf6;color:#9aa6be;font:700 12px 'Noto Sans SC'">即将推出</span></div><button style="align-self:flex-start;min-height:36px;padding:0 14px;border-radius:12px;background:#f7faff;border:1px solid #e7ecf6;color:#9aa6be;font:700 13px 'Noto Sans SC'">敬请期待</button></div></div>
+</div>
+
+
+</div></div></sc-if>
+
+<sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,520px);margin:40px auto;animation:lm-in .3s ease both">
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:32px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:center;gap:8px;font:600 12px Inter;color:#9aa6be"><span style="width:22px;height:22px;border-radius:50%;background:{{ step1Bg }};color:{{ step1Fg }};display:grid;place-items:center">1</span>邮箱<span style="flex:1;border-top:1px solid #e7ecf6"></span><span style="width:22px;height:22px;border-radius:50%;background:{{ step2Bg }};color:{{ step2Fg }};display:grid;place-items:center">2</span>资料</div>
+<sc-if value="{{ regStep1 }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:20px">
+<div><div style="font:900 28px 'Noto Sans SC';color:#243056">注册</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">邮箱</label><input value="{{ regEmail }}" onChange="{{ setRegEmail }}" placeholder="you@example.com" style="min-height:40px;padding:8px 12px;border:1px solid {{ regEmailBorder }};border-radius:8px;background:#fff;font-size:16px" /><sc-if value="{{ regEmailErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#d9342a">{{ regEmailErr }}</div></sc-if></div>
+<button onClick="{{ sendCode }}" style="min-height:40px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">{{ sendCodeLabel }}</button>
+<div style="font-size:13px;color:#6b7894;text-align:center">已有账号？<button onClick="{{ goLogin }}" style="background:none;border:0;padding:0;color:#6171f0;font:700 13px 'Noto Sans SC'">登录</button></div></div></sc-if>
+<sc-if value="{{ regStep2 }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;align-items:center;gap:12px"><button onClick="{{ backStep1 }}" style="width:32px;height:32px;border-radius:10px;background:#fff;border:1px solid #e7ecf6;color:#6b7894;font-size:14px">←</button><div style="font:900 22px 'Noto Sans SC';color:#243056">完善资料</div><span style="margin-left:auto;font:12px ui-monospace,monospace;color:#6b7894">{{ regEmail }}</span></div>
+
+<div style="display:grid;grid-template-columns:1fr;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">用户名</label><input value="{{ regName }}" onChange="{{ setRegName }}" placeholder="字母开头，3–32 位" style="min-height:40px;padding:8px 12px;border:1px solid #e7ecf6;border-radius:8px;font:600 16px Inter" /></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">密码</label><input type="password" value="{{ regPwd }}" onChange="{{ setRegPwd }}" placeholder="至少 8 位" style="min-height:40px;padding:8px 12px;border:1px solid #e7ecf6;border-radius:8px;font-size:16px" /></div>
+<div style="display:flex;flex-direction:column;gap:12px"><label style="font:500 13px 'Noto Sans SC'">头像</label><div style="display:grid;grid-template-columns:repeat(6,48px);gap:12px">{{ avatarGrid }}</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:baseline;justify-content:space-between"><label style="font:500 13px 'Noto Sans SC'">验证码</label><button onClick="{{ sendCode }}" style="background:none;border:0;padding:0;color:#6171f0;font:700 12px 'Noto Sans SC'">{{ sendCodeLabel }}</button></div><div style="display:flex;gap:10px">{{ codeBoxes }}</div></div></div>
+<sc-if value="{{ regErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#d9342a">{{ regErr }}</div></sc-if>
+<button onClick="{{ finishRegister }}" style="min-height:40px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">完成注册</button></div></sc-if>
+</div></div></sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,420px);margin:48px auto;animation:lm-in .3s ease both">
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:32px;display:flex;flex-direction:column;gap:20px">
+<div><div style="font:900 28px 'Noto Sans SC';color:#243056">{{ loginTitle }}</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">邮箱</label><input value="{{ loginEmail }}" onChange="{{ setLoginEmail }}" placeholder="you@example.com" style="min-height:40px;padding:8px 12px;border:1px solid {{ loginBorder }};border-radius:8px;font-size:16px" /></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">密码</label><input type="password" value="{{ loginPwd }}" onChange="{{ setLoginPwd }}" placeholder="至少 8 位" style="min-height:40px;padding:8px 12px;border:1px solid {{ loginBorder }};border-radius:8px;font-size:16px" /></div>
+<sc-if value="{{ loginErr }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 14px;border-radius:12px;background:#fce7ec;font-size:13px;color:#c2415b">{{ loginErr }}</div></sc-if>
+<button onClick="{{ doLogin }}" style="min-height:40px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">{{ loginCta }}</button>
+
+<div style="font-size:13px;color:#6b7894;text-align:center">还没有账号？<button onClick="{{ goRegister }}" style="background:none;border:0;padding:0;color:#6171f0;font:700 13px 'Noto Sans SC'">注册</button></div>
+</div></div></sc-if>
+
+<sc-if value="{{ isMe }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,1120px);margin:0 auto;padding:32px 0;display:grid;grid-template-columns:1fr 1.1fr;gap:24px;animation:lm-in .3s ease both">
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:24px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;align-items:center;gap:16px"><div style="width:72px;height:72px;border-radius:50%;background:#eaf0ff;border:2px solid #7c8cff;display:grid;place-items:center;font-size:32px">{{ myAvatar }}</div><div><div style="font:800 24px Inter;color:#243056">{{ myName }}</div><div style="display:flex;align-items:center;gap:8px;margin-top:6px;font:13px ui-monospace,monospace;color:#6b7894">UID {{ myUid }}<button onClick="{{ copyUid }}" style="min-height:30px;padding:0 12px;border-radius:12px;background:#f3f6ff;border:1px solid #c9d3f5;color:#6171f0;font:700 12px 'Noto Sans SC'">{{ copyLabel }}</button></div></div></div>
+<div style="display:flex;flex-direction:column;gap:12px"><label style="font:500 13px 'Noto Sans SC'">头像</label><div style="display:grid;grid-template-columns:repeat(6,48px);gap:12px">{{ avatarGrid }}</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><div style="font:500 13px 'Noto Sans SC'">我玩过的</div><div style="padding:12px;border-radius:12px;background:#f7faff;border:1px solid #e7ecf6;font-size:13px;color:#6b7894">体素炸弹人 · {{ myPlays }} 局</div></div>
+</div>
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="font:700 20px 'Noto Sans SC';color:#243056">账号</div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">用户名</label><div style="min-height:40px;border:1px solid #e7ecf6;border-radius:8px;background:#f7faff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;font-size:16px;color:#6b7894">{{ myName }}<span style="font-size:13px;color:#9aa6be">不可修改</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">邮箱</label><div style="min-height:40px;border:1px solid #e7ecf6;border-radius:8px;background:#f7faff;padding:8px 12px;font-size:16px;color:#6b7894">{{ myEmail }}</div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">加入时间</label><div style="min-height:40px;border:1px solid #e7ecf6;border-radius:8px;background:#f7faff;padding:8px 12px;font-size:16px;color:#6b7894">2026 年 8 月 12 日</div></div>
+
+<button onClick="{{ logout }}" style="align-self:flex-start;margin-top:auto;min-height:40px;padding:0 18px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 14px 'Noto Sans SC'">退出登录</button></div></div></sc-if>
+
+<sc-if value="{{ isFeedback }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,1120px);margin:0 auto;padding:32px 0;animation:lm-in .3s ease both">
+<div style="font:900 28px 'Noto Sans SC';color:#243056;margin-bottom:20px">反馈</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start">
+
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:24px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;gap:10px">
+<button onClick="{{ pickBug }}" style="display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 16px;border-radius:999px;background:{{ bugBg }};border:1px solid {{ bugBorder }};color:{{ bugFg }};font:700 13px 'Noto Sans SC'"><i style="width:8px;height:8px;border-radius:2px;background:#6171f0"></i>Bug</button>
+<button onClick="{{ pickIdea }}" style="display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:0 16px;border-radius:999px;background:{{ ideaBg }};border:1px solid {{ ideaBorder }};color:{{ ideaFg }};font:700 13px 'Noto Sans SC'"><i style="width:8px;height:8px;border-radius:2px;background:#5de2c6"></i>建议</button></div>
+
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:baseline;justify-content:space-between"><label style="font:500 13px 'Noto Sans SC'">标题</label><span style="font:12px ui-monospace,monospace;color:#9aa6be">{{ fbTitleCount }}/80</span></div>
+<input value="{{ fbTitle }}" onChange="{{ setFbTitle }}" style="min-height:44px;padding:8px 14px;border:1px solid #e7ecf6;border-radius:10px;background:#fff;font-size:15px" /></div>
+
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:baseline;justify-content:space-between"><label style="font:500 13px 'Noto Sans SC'">详情</label><span style="font:12px ui-monospace,monospace;color:#9aa6be">{{ fbBodyCount }}/4000</span></div>
+<textarea value="{{ fbBody }}" onChange="{{ setFbBody }}" onPaste="{{ onPaste }}" style="min-height:150px;padding:12px 14px;border:1px solid #e7ecf6;border-radius:10px;background:#fff;font-size:15px;line-height:1.6;resize:vertical"></textarea></div>
+
+<div style="display:flex;flex-direction:column;gap:8px">
+<label style="font:500 13px 'Noto Sans SC'">截图</label>
+<div onPaste="{{ onPaste }}" onDrop="{{ onDrop }}" onDragOver="{{ onDragOver }}" style="display:flex;flex-wrap:wrap;gap:12px;padding:14px;border:1px dashed {{ dropBorder }};border-radius:12px;background:{{ dropBg }};min-height:96px;align-items:center">
+{{ shotList }}
+<label style="width:96px;height:72px;border-radius:10px;border:1px solid #e7ecf6;background:#fff;display:grid;place-items:center;gap:2px;cursor:pointer;color:#9aa6be"><span style="font-size:20px;color:#6171f0">＋</span><input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ onPickFiles }}" style="display:none" /></label>
+<div style="display:flex;flex-direction:column;gap:4px;font:12px 'Noto Sans SC';color:#9aa6be"><span>拖入 / 点击选择 / ⌘V 粘贴</span><span>PNG · JPG · 最多 4 张</span></div>
+</div></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div style="display:flex;flex-direction:column;gap:6px"><label style="font:500 13px 'Noto Sans SC'">相关游戏</label><select value="{{ fbGame }}" onChange="{{ setFbGame }}" style="min-height:44px;padding:8px 14px;border:1px solid #e7ecf6;border-radius:10px;background:#fff;font-size:15px"><option value="体素炸弹人">体素炸弹人</option><option value="平台">平台</option><option value="">不选</option></select></div>
+<div style="display:flex;flex-direction:column;gap:6px"><label style="font:500 13px 'Noto Sans SC'">联系方式</label><input value="{{ fbContact }}" onChange="{{ setFbContact }}" placeholder="邮箱 / QQ" style="min-height:44px;padding:8px 14px;border:1px solid #e7ecf6;border-radius:10px;background:#fff;font-size:15px" /></div></div>
+
+<sc-if value="{{ fbErr }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#d9342a">{{ fbErr }}</div></sc-if>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:4px;border-top:1px solid #e7ecf6;margin-top:2px;padding-top:18px">
+<button onClick="{{ toggleAnon }}" style="display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;font-size:13px;color:#6b7894"><span style="width:18px;height:18px;border:1px solid #c9d3f5;border-radius:5px;background:{{ anonBg }};color:#fff;display:grid;place-items:center;font-size:12px">{{ anonMark }}</span>匿名提交</button>
+<button onClick="{{ submitFb }}" style="min-height:44px;padding:0 26px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 15px 'Noto Sans SC'">提交</button></div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:20px">
+<button onClick="{{ openGroup }}" style="text-align:left;background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:20px;display:flex;align-items:center;gap:12px">
+<span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(150deg,#7c8cff,#9aa6ff);display:grid;place-items:center;font:700 15px 'Noto Sans SC';color:#fff">群</span>
+<span style="flex:1;font:700 15px 'Noto Sans SC';color:#243056">开发者交流群</span><span style="color:#9aa6be">›</span></button>
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2);padding:20px;display:flex;flex-direction:column;gap:12px"><div style="font:700 16px 'Noto Sans SC';color:#243056">我的反馈</div>{{ myFeedbackList }}</div></div>
+
+</div></div></sc-if>
+
+<sc-if value="{{ isLaunching }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:60vh;display:grid;place-items:center;animation:lm-in .3s ease both"><div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+<div style="width:64px;height:64px;position:relative;transform-style:preserve-3d;transform:rotateX(-24deg) rotateZ(-45deg);animation:lm-spin 3.2s linear infinite"><i style="position:absolute;inset:0;border-radius:3px;background:#bcc5ff;transform:rotateX(90deg) translateZ(32px)"></i><i style="position:absolute;inset:0;border-radius:3px;background:#8b99ff;transform:translateZ(32px)"></i><i style="position:absolute;inset:0;border-radius:3px;background:#5a66c8;transform:rotateY(-90deg) translateZ(32px)"></i></div>
+<div style="font:700 20px 'Noto Sans SC';color:#243056">正在进入 体素炸弹人…</div>
+<div style="width:240px;height:4px;border-radius:999px;background:#e7ecf6;overflow:hidden"><div style="width:{{ launchPct }}%;height:100%;background:linear-gradient(135deg,#6171f0,#5de2c6);transition:width .4s ease"></div></div>
+<div style="font-size:13px;color:#9aa6be">{{ launchStage }}</div>
+<button onClick="{{ goLobby }}" style="min-height:36px;padding:0 16px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 13px 'Noto Sans SC'">取消</button></div></div></sc-if>
+
+<sc-if value="{{ isGame }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,1120px);margin:0 auto;padding:24px 0;animation:lm-in .3s ease both">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+<button onClick="{{ goLobby }}" style="min-height:36px;padding:0 14px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 13px 'Noto Sans SC'">← 离开房间</button>
+<div style="display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:999px;background:#fff;border:1px solid #e7ecf6;box-shadow:0 1px 2px rgba(30,42,58,.04)">
+<div style="display:flex">{{ roomStack }}</div>
+<div style="font:700 13px 'Noto Sans SC';color:#243056">房间 {{ roomId }} · {{ roomFill }} 人在玩</div>
+<span style="padding:2px 9px;border-radius:999px;background:#e3f7ed;color:#1f8a5b;font:700 12px 'Noto Sans SC'">进行中</span></div>
+
+<button onClick="{{ openInvite }}" style="margin-left:auto;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 18px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">邀请朋友</button></div>
+<div style="position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#1e2a3a;border:1px solid #e7ecf6">
+<div style="position:absolute;inset:0;background-image:linear-gradient(rgba(124,140,255,.14) 1px,transparent 1px),linear-gradient(90deg,rgba(124,140,255,.14) 1px,transparent 1px);background-size:44px 44px"></div>
+<div style="position:absolute;left:20%;top:34%;width:64px;height:64px;border-radius:14px;background:#7c8cff;box-shadow:0 24px 40px -18px rgba(0,0,0,.6);animation:lm-float 6s ease-in-out infinite"></div>
+<div style="position:absolute;left:56%;top:52%;width:48px;height:48px;border-radius:12px;background:#5de2c6;animation:lm-float 7s ease-in-out .4s infinite"></div>
+<div style="position:absolute;left:70%;top:26%;width:36px;height:36px;border-radius:10px;background:#ffb86b;animation:lm-float 5.6s ease-in-out .8s infinite"></div>
+<div style="position:absolute;left:20px;top:20px;display:flex;flex-direction:column;gap:8px">{{ scoreboard }}</div>
+<sc-if value="{{ inviteOpen }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:20px;bottom:20px;width:300px;background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 22px 56px -18px rgba(0,0,0,.55);padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 16px 'Noto Sans SC';color:#243056">邀请好友</div><button onClick="{{ closeInvite }}" style="background:none;border:0;padding:0;color:#9aa6be">✕</button></div>
+
+<div style="display:flex;gap:12px;align-items:center"><div style="width:80px;height:80px;border:1px solid #e7ecf6;border-radius:8px;background:repeating-conic-gradient(#1e2a3a 0 25%,#fff 0 50%) 0 0/16px 16px;flex:none"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px"><div style="min-height:32px;border:1px solid #e7ecf6;border-radius:8px;padding:6px 10px;font:11px ui-monospace,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ inviteUrl }}</div>
+<button onClick="{{ copyInvite }}" style="min-height:32px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);font:700 13px 'Noto Sans SC'">{{ inviteCopyLabel }}</button>
+<button onClick="{{ addFriend }}" style="min-height:32px;border-radius:12px;background:#f3f6ff;border:1px solid #c9d3f5;color:#6171f0;font:700 13px 'Noto Sans SC'">模拟朋友加入</button></div></div></div></sc-if>
+</div></div></sc-if>
+
+<sc-if value="{{ isLaunchFail }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:56vh;display:grid;place-items:center;animation:lm-in .3s ease both"><div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:#6b7894"><div style="width:48px;height:48px;border-radius:14px;background:#fce7ec;display:grid;place-items:center;font-size:22px">⚠</div><div style="font:700 20px 'Noto Sans SC';color:#243056">现在进不去，稍后再试</div><div style="display:flex;gap:12px;margin-top:4px"><button onClick="{{ startVoxel }}" style="min-height:40px;padding:0 18px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">再试一次</button><button onClick="{{ goLobby }}" style="min-height:40px;padding:0 18px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 14px 'Noto Sans SC'">回到大厅</button></div></div></div></sc-if>
+
+<sc-if value="{{ is403 }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:56vh;display:grid;place-items:center;animation:lm-in .3s ease both"><div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:#6b7894"><div style="font:800 48px Inter;letter-spacing:-.03em;background:linear-gradient(135deg,#6171f0,#5de2c6);-webkit-background-clip:text;background-clip:text;color:transparent">403</div><div style="font:700 20px 'Noto Sans SC';color:#243056">这里只有管理员能进</div><button onClick="{{ goLobby }}" style="min-height:40px;padding:0 18px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">回到大厅</button></div></div></sc-if>
+
+<sc-if value="{{ isAdminView }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,1344px);margin:0 auto;padding:24px 0;display:grid;grid-template-columns:200px 1fr;gap:24px;animation:lm-in .3s ease both">
+<div style="background:#fff;border:1px solid #e7ecf6;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;height:max-content">
+<div style="font:700 11px Inter;letter-spacing:.12em;color:#9aa6be;padding:8px 10px">ADMIN</div>{{ adminNav }}</div>
+<div style="display:flex;flex-direction:column;gap:20px">{{ adminBody }}</div>
+</div></sc-if>
+
+</div>
+
+<sc-if value="{{ isRoadmap }}" hint-placeholder-val="{{ false }}">
+<div style="width:min(100% - 64px,880px);margin:0 auto;padding:32px 0;animation:lm-in .3s ease both">
+<div style="font:900 28px 'Noto Sans SC';color:#243056;margin-bottom:20px">Roadmap</div>
+<div style="display:flex;flex-direction:column;gap:12px">{{ roadmapList }}</div>
+</div></sc-if>
+
+<sc-if value="{{ groupOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:40;background:rgba(36,48,86,.34);display:grid;place-items:center;padding:24px">
+<div style="width:min(100%,480px);background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 22px 56px -18px rgba(53,68,120,.42);padding:28px;display:flex;flex-direction:column;gap:20px;animation:lm-in .24s ease both">
+<div style="display:flex;justify-content:space-between;align-items:center"><div style="font:700 20px 'Noto Sans SC';color:#243056">开发者交流群</div><button onClick="{{ closeGroup }}" style="background:none;border:0;padding:0;color:#9aa6be;font-size:16px">✕</button></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:100%;aspect-ratio:1;border-radius:12px;border:1px solid #e7ecf6;background:repeating-conic-gradient(#1e2a3a 0 25%,#fff 0 50%) 0 0/18px 18px"></div></div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:10px"><div style="width:100%;aspect-ratio:1;border-radius:12px;border:1px solid #e7ecf6;background:repeating-conic-gradient(#1e2a3a 0 25%,#fff 0 50%) 0 0/18px 18px"></div></div></div>
+<div style="display:flex;gap:12px">
+<a href="#" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:12px;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">飞书群 ↗</a>
+<a href="#" style="flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:12px;background:#f3f6ff;border:1px solid #c9d3f5;color:#6171f0;font:700 14px 'Noto Sans SC'">QQ 群 ↗</a></div>
+</div></div></sc-if>
+
+<sc-if value="{{ shareOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:40;background:rgba(36,48,86,.34);display:grid;place-items:center;padding:24px">
+<div style="width:min(100%,480px);background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 22px 56px -18px rgba(53,68,120,.42);padding:32px;display:flex;flex-direction:column;gap:16px;animation:lm-in .24s ease both">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px"><div><div style="font:700 20px 'Noto Sans SC';color:#243056">分享 体素炸弹人</div></div><button onClick="{{ closeShare }}" style="background:none;border:0;padding:0;color:#9aa6be;font-size:16px">✕</button></div>
+<div style="display:flex;gap:16px;align-items:center"><div style="width:128px;height:128px;border-radius:8px;border:1px solid #e7ecf6;background:repeating-conic-gradient(#1e2a3a 0 25%,#fff 0 50%) 0 0/20px 20px;flex:none"></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px"><label style="font:500 13px 'Noto Sans SC'">链接</label><div style="min-height:40px;border:1px solid #e7ecf6;border-radius:8px;padding:0 6px 0 12px;display:flex;align-items:center;gap:8px"><span style="flex:1;font:13px ui-monospace,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ shareUrl }}</span><button onClick="{{ copyShare }}" style="min-height:32px;padding:0 12px;border-radius:12px;background:#f3f6ff;border:1px solid #c9d3f5;color:#6171f0;font:700 13px 'Noto Sans SC'">{{ shareCopyLabel }}</button></div></div></div>
+<div style="display:flex;gap:12px"><button onClick="{{ webShare }}" style="flex:1;min-height:40px;border-radius:12px;border:0;color:#fff;background:linear-gradient(135deg,#7c8cff,#6171f0);box-shadow:0 18px 38px -14px rgba(97,113,240,.8);font:700 14px 'Noto Sans SC'">系统分享…</button><button onClick="{{ closeShare }}" style="min-height:40px;padding:0 18px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 14px 'Noto Sans SC'">下载二维码</button></div>
+</div></div></sc-if>
+
+<sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:40;background:rgba(36,48,86,.34);display:grid;place-items:center;padding:24px">
+<div style="width:min(100%,416px);background:#fff;border:1px solid #e7ecf6;border-radius:16px;box-shadow:0 22px 56px -18px rgba(53,68,120,.42);padding:32px;display:flex;flex-direction:column;gap:16px;animation:lm-in .24s ease both">
+<div style="font:700 18px 'Noto Sans SC';color:#243056">{{ confirmTitle }}</div>
+<div style="font-size:13px;color:#6b7894;line-height:1.6">{{ confirmBody }}</div>
+<div style="display:flex;gap:12px;justify-content:flex-end"><button onClick="{{ closeConfirm }}" style="min-height:40px;padding:0 18px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;font:700 14px 'Noto Sans SC'">取消</button><button onClick="{{ confirmAct }}" style="min-height:40px;padding:0 18px;border-radius:12px;border:0;color:#fff;background:#d9342a;font:700 14px 'Noto Sans SC'">{{ confirmCta }}</button></div>
+</div></div></sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:50;display:inline-flex;align-items:center;gap:12px;padding:12px 18px;border-radius:12px;background:#fff;border:1px solid #e7ecf6;box-shadow:0 22px 56px -18px rgba(53,68,120,.42);font:700 14px 'Noto Sans SC';animation:lm-in .24s ease both"><span style="width:8px;height:8px;border-radius:2px;background:#1f8a5b"></span>{{ toast }}</div></sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const AV = ["🦆","🐰","🐱","🐻","🐸","🐼","🦊","🐥","🦝","🐷","🦉","🦫"];
+const E = React.createElement;
+
+class Component extends DCLogic {
+  state = {
+    screen: "lobby", role: "guest", name: "", email: "", uid: 100042, avatar: 2, plays: 3,
+    subEmail: "", regStep: 1, regEmail: "", regCode: "", regPwd: "", regName: "", regEmailErr: "", regErr: "", cooldown: 0,
+    loginEmail: "", loginPwd: "", loginErr: "", next: null,
+    fbKind: "bug", fbTitle: "", fbBody: "", fbGame: "体素炸弹人", fbContact: "", fbAnon: false, fbErr: "", shots: [], dragOver: false,
+    feedback: [
+      { id: 3, kind: "bug", title: "炸弹偶尔穿墙", user: "alice", game: "体素炸弹人", date: "09-02", status: "处理中" },
+      { id: 2, kind: "idea", title: "想要观战模式", user: "匿名", game: "—", date: "08-30", status: "新提交" },
+      { id: 1, kind: "bug", title: "头像没保存", user: "alice", game: "平台", date: "08-21", status: "已关闭" }
+    ],
+    users: [
+      { uid: 100042, name: "alice", email: "alice@example.com", role: "player", banned: false, joined: "2026-08-12" },
+      { uid: 100043, name: "bob", email: "bob@example.com", role: "player", banned: true, joined: "2026-08-14" },
+      { uid: 100001, name: "admin", email: "admin@lumio.games", role: "admin", banned: false, joined: "2026-07-02" }
+    ],
+    games: [
+      { slug: "voxel-bomber", title: "体素炸弹人", published: true, sort: 10, cap: 8 },
+      { slug: "bedwars-td", title: "起床战争俯视改编", published: false, sort: 20, cap: 12 },
+      { slug: "escape-duckov", title: "逃离鸭科夫", published: false, sort: 30, cap: 10 }
+    ],
+    settings: { feishu: "https://applink.feishu.cn/…", qq: "https://qm.qq.com/…", qqNo: "972220164" },
+    adminTab: "dash", groupOpen: false, groupTab: "feishu", groupCopied: false,
+    roadmap: [
+      { q: "2026 Q3", t: "账号体系与大厅上线", s: "已完成" },
+      { q: "2026 Q3", t: "体素炸弹人首发", s: "已完成" },
+      { q: "2026 Q4", t: "房间与观战", s: "进行中" },
+      { q: "2026 Q4", t: "起床战争俯视改编", s: "进行中" },
+      { q: "2027 Q1", t: "逃离鸭科夫", s: "计划中" },
+      { q: "2027 Q1", t: "引擎 SDK 开放", s: "计划中" }
+    ],
+    roomId: "vb-1", roomFill: 5, roomCap: 8, onlineTotal: 12, roomCount: 3, vbOnline: 12,
+    launchPct: 0, launchStage: "领取入场券…", inviteOpen: false, shareOpen: false,
+    confirm: null, toast: "", copied: false, shareCopied: false, inviteCopied: false
+  };
+
+  componentWillUnmount() { clearInterval(this.tick); clearTimeout(this.t1); clearTimeout(this.t2); clearTimeout(this.t3); }
+
+  say(msg) { clearTimeout(this.t3); this.setState({ toast: msg }); this.t3 = setTimeout(() => this.setState({ toast: "" }), 2200); }
+  nav(s) { this.setState({ screen: s, inviteOpen: false }); }
+  requireAuth(next) {
+    if (this.state.role === "guest") { this.setState({ screen: "login", next, loginErr: "", loginPwd: "" }); return false; }
+    return true;
+  }
+
+  launch = () => {
+    if (!this.requireAuth("game")) return;
+    this.setState({ screen: "launching", launchPct: 12, launchStage: "领取入场券…" });
+    clearTimeout(this.t1); clearTimeout(this.t2);
+    this.t1 = setTimeout(() => this.setState({ launchPct: 62, launchStage: "连接游戏服务器…" }), 700);
+    this.t2 = setTimeout(() => {
+      this.setState(s => ({
+        screen: "game", launchPct: 100,
+        roomFill: Math.min(s.roomCap, s.roomFill + 1),
+        onlineTotal: s.onlineTotal + 1, vbOnline: s.vbOnline + 1, plays: s.plays + 1
+      }));
+      this.say("已加入房间 " + this.state.roomId);
+    }, 1600);
+  };
+
+  renderVals() {
+    const s = this.state, me = s.role !== "guest";
+    const scr = s.screen;
+    const avatarGrid = AV.map((a, i) => E("button", {
+      key: i, onClick: () => { this.setState({ avatar: i }); if (scr === "me") this.say("头像已更新"); },
+      style: {
+        width: 48, height: 48, borderRadius: "50%", background: "#eaf0ff", fontSize: 21.6, padding: 0, cursor: "pointer",
+        border: i === s.avatar ? "2px solid #7c8cff" : "2px solid transparent",
+        boxShadow: i === s.avatar ? "0 0 0 3px rgba(124,140,255,.28)" : "none"
+      }
+    }, a));
+
+    const roomStack = Array.from({ length: Math.min(4, s.roomFill) }).map((_, i) => E("span", {
+      key: i, style: { width: 26, height: 26, borderRadius: "50%", background: "#eaf0ff", border: "2px solid #fff", display: "grid", placeItems: "center", fontSize: 13, marginLeft: i ? -8 : 0 }
+    }, AV[(i * 3 + 1) % AV.length])).concat(s.roomFill > 4 ? [E("span", {
+      key: "more", style: { width: 26, height: 26, borderRadius: "50%", background: "#6171f0", color: "#fff", border: "2px solid #fff", display: "grid", placeItems: "center", font: "700 10px Inter", marginLeft: -8 }
+    }, "+" + (s.roomFill - 4))] : []);
+
+    const scoreboard = Array.from({ length: Math.min(5, s.roomFill) }).map((_, i) => E("div", {
+      key: i, style: { display: "flex", alignItems: "center", gap: 8, padding: "5px 12px 5px 6px", borderRadius: 999, background: "rgba(255,255,255,.92)", font: "700 12px 'Noto Sans SC'", color: "#243056" }
+    }, E("span", { style: { width: 20, height: 20, borderRadius: "50%", background: "#eaf0ff", display: "grid", placeItems: "center", fontSize: 11 } }, AV[(i * 3 + 1) % AV.length]),
+       E("span", null, i === 0 ? (me ? s.name : "you") : "player" + (i + 1)),
+       E("span", { style: { color: "#9aa6be" } }, (9 - i * 2) + " 分")));
+
+    const pill = st => ({ "新提交": { background: "#eaf0ff", color: "#6171f0" }, "处理中": { background: "#fff4e4", color: "#9a5b12" }, "已关闭": { background: "#eef1f6", color: "#6b7894" } }[st]);
+    const myFeedbackList = me
+      ? (s.feedback.filter(f => f.user === s.name).length
+        ? s.feedback.filter(f => f.user === s.name).map(f => E("div", { key: f.id, style: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontSize: 13 } },
+            E("span", null, f.title), E("span", { style: Object.assign({ padding: "2px 9px", borderRadius: 999, font: "700 12px 'Noto Sans SC'" }, pill(f.status)) }, f.status)))
+        : E("div", { style: { fontSize: 13, color: "#9aa6be" } }, "—"))
+      : E("div", { style: { fontSize: 13, color: "#9aa6be" } }, "—");
+
+    const rmPill = { "已完成": { background: "#e3f7ed", color: "#1f8a5b" }, "进行中": { background: "#eaf0ff", color: "#6171f0" }, "计划中": { background: "#eef1f6", color: "#6b7894" } };
+    const roadmapList = s.roadmap.map((r, i) => E("div", {
+      key: i, style: { display: "flex", alignItems: "center", gap: 16, padding: "16px 20px", background: "#fff", border: "1px solid #e7ecf6", borderRadius: 12, boxShadow: "0 1px 2px rgba(30,42,58,.04)" }
+    }, E("span", { style: { font: "700 12px Inter", letterSpacing: ".08em", color: "#9aa6be", width: 64 } }, r.q),
+       E("span", { style: { width: 10, height: 10, borderRadius: 3, background: r.s === "计划中" ? "#c9d3f5" : r.s === "进行中" ? "#7c8cff" : "#5de2c6" } }),
+       E("span", { style: { flex: 1, font: "700 15px 'Noto Sans SC'", color: "#243056" } }, r.t),
+       E("span", { style: Object.assign({ padding: "3px 10px", borderRadius: 999, font: "700 12px 'Noto Sans SC'", whiteSpace: "nowrap" }, rmPill[r.s]) }, r.s)));
+
+    const tabs = [["dash", "看板"], ["users", "用户"], ["games", "游戏目录"], ["fb", "反馈"], ["set", "设置"]];
+    const adminNav = tabs.map(([k, label]) => E("button", {
+      key: k, onClick: () => this.setState({ adminTab: k }),
+      style: {
+        textAlign: "left", padding: "9px 12px", borderRadius: 10, border: 0, font: "700 13px 'Noto Sans SC'", cursor: "pointer",
+        background: s.adminTab === k ? "linear-gradient(135deg,#7c8cff,#6171f0)" : "#fff", color: s.adminTab === k ? "#fff" : "#6b7894"
+      }
+    }, label));
+
+    const card = (children, extra) => E("div", { style: Object.assign({ background: "#fff", border: "1px solid #e7ecf6", borderRadius: 12, boxShadow: "0 1px 2px rgba(30,42,58,.04),0 14px 40px -16px rgba(53,68,120,.2)", padding: 20 }, extra) }, children);
+    const h = t => E("div", { style: { font: "700 18px 'Noto Sans SC'", color: "#243056", marginBottom: 12 } }, t);
+    const th = { textAlign: "left", padding: "8px 10px", borderBottom: "1px solid #e7ecf6", font: "500 12px Inter", color: "#9aa6be", letterSpacing: ".04em" };
+    const td = { padding: "10px 10px", borderBottom: "1px solid #e7ecf6", fontSize: 13 };
+    const btn = (label, onClick, kind) => E("button", {
+      onClick, style: {
+        minHeight: 32, padding: "0 12px", borderRadius: 10, font: "700 12px 'Noto Sans SC'", cursor: "pointer", whiteSpace: "nowrap",
+        border: kind === "primary" ? 0 : "1px solid " + (kind === "ghost" ? "#c9d3f5" : "#e7ecf6"),
+        background: kind === "primary" ? "linear-gradient(135deg,#7c8cff,#6171f0)" : kind === "ghost" ? "#f3f6ff" : "#fff",
+        color: kind === "primary" ? "#fff" : kind === "ghost" ? "#6171f0" : "#1e2a3a"
+      }
+    }, label);
+
+    let adminBody;
+    if (s.adminTab === "dash") {
+      const stat = (n, l) => E("div", { style: { background: "#fff", padding: 20, display: "flex", flexDirection: "column", gap: 4 } },
+        E("div", { style: { font: "800 32px Inter", letterSpacing: "-.03em", lineHeight: 1, background: "linear-gradient(135deg,#6171f0,#5de2c6)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" } }, n),
+        E("div", { style: { fontSize: 13, color: "#6b7894" } }, l));
+      adminBody = [
+        E("div", { key: "s", style: { display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: "#e7ecf6", border: "1px solid #e7ecf6", borderRadius: 12, overflow: "hidden" } },
+          stat(String(s.onlineTotal), "当前在玩"), stat(String(s.roomCount), "开着的房间"), stat("37", "新注册（7 天）"),
+          stat(String(s.feedback.filter(f => f.status === "新提交").length), "待处理反馈")),
+        E("div", { key: "r", style: { display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 20 } },
+          card([h("房间实时人数"), E("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+            [[s.roomId, s.roomFill, s.roomCap], ["vb-2", 4, 8], ["vb-3", 3, 8]].map(([id, f, c]) => E("div", { key: id, style: { display: "flex", alignItems: "center", gap: 12 } },
+              E("span", { style: { font: "12px ui-monospace,monospace", color: "#6b7894", width: 48 } }, id),
+              E("span", { style: { flex: 1, height: 8, borderRadius: 999, background: "#eef1f6", overflow: "hidden" } },
+                E("span", { style: { display: "block", width: (f / c * 100) + "%", height: "100%", background: "linear-gradient(135deg,#6171f0,#5de2c6)" } })),
+              E("span", { style: { font: "700 12px 'Noto Sans SC'", color: "#243056" } }, f + "/" + c))))]),
+          card([h("分享统计"), E("div", { style: { display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#6b7894" } },
+            [["分享次数（7 天）", "184"], ["带来的访问", "612"], ["带来的注册", "23"], ["转化率", "3.8%"]].map(([k, v]) => E("div", { key: k, style: { display: "flex", justifyContent: "space-between" } }, E("span", null, k), E("b", { style: { color: "#243056" } }, v))))]))
+      ];
+    } else if (s.adminTab === "users") {
+      adminBody = card([h("用户"), E("div", { style: { overflowX: "auto" } }, E("table", { style: { width: "100%", minWidth: 760, borderCollapse: "collapse" } },
+        E("thead", null, E("tr", null, ["UID", "用户名", "邮箱", "角色", "状态", "加入", ""].map(x => E("th", { key: x, style: th }, x)))),
+        E("tbody", null, s.users.map(u => E("tr", { key: u.uid },
+          E("td", { style: Object.assign({ font: "12px ui-monospace,monospace" }, td) }, u.uid),
+          E("td", { style: td }, u.name), E("td", { style: Object.assign({ color: "#6b7894" }, td) }, u.email),
+          E("td", { style: td }, E("span", { style: { padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap", font: "700 12px 'Noto Sans SC'", background: u.role === "admin" ? "#eaf0ff" : "#eef1f6", color: u.role === "admin" ? "#6171f0" : "#6b7894" } }, u.role)),
+          E("td", { style: td }, E("span", { style: { padding: "2px 9px", borderRadius: 999, whiteSpace: "nowrap", font: "700 12px 'Noto Sans SC'", background: u.banned ? "#fce7ec" : "#e3f7ed", color: u.banned ? "#c2415b" : "#1f8a5b" } }, u.banned ? "已停用" : "正常")),
+          E("td", { style: Object.assign({ color: "#6b7894" }, td) }, u.joined),
+          E("td", { style: td }, E("div", { style: { display: "flex", gap: 8 } },
+            btn(u.banned ? "恢复" : "停用", () => u.banned ? this.unban(u.uid) : this.askBan(u), u.banned ? "ghost" : "quiet"),
+            btn(u.role === "admin" ? "降为 player" : "升为 admin", () => this.toggleRole(u.uid), "quiet"))))))))]);
+    } else if (s.adminTab === "games") {
+      adminBody = card([h("游戏目录"), E("table", { style: { width: "100%", borderCollapse: "collapse" } },
+        E("thead", null, E("tr", null, ["slug", "名称", "房间容量", "排序", "状态", ""].map(x => E("th", { key: x, style: th }, x)))),
+        E("tbody", null, s.games.map(g => E("tr", { key: g.slug },
+          E("td", { style: Object.assign({ font: "12px ui-monospace,monospace" }, td) }, g.slug),
+          E("td", { style: td }, g.title),
+          E("td", { style: td }, E("input", { value: g.cap, onChange: e => this.setCap(g.slug, e.target.value), style: { width: 64, minHeight: 30, padding: "4px 8px", border: "1px solid #e7ecf6", borderRadius: 8, fontSize: 13 } })),
+          E("td", { style: Object.assign({ color: "#6b7894" }, td) }, g.sort),
+          E("td", { style: td }, E("span", { style: { padding: "2px 9px", borderRadius: 999, font: "700 12px 'Noto Sans SC'", background: g.published ? "#e3f7ed" : "#fff", color: g.published ? "#1f8a5b" : "#9aa6be", border: g.published ? 0 : "1px solid #e7ecf6" } }, g.published ? "已发布" : "草稿")),
+          E("td", { style: td }, btn(g.published ? "下架" : "发布", () => this.togglePub(g.slug), g.published ? "quiet" : "primary"))))))]);
+    } else if (s.adminTab === "fb") {
+      adminBody = card([h("反馈队列"), E("table", { style: { width: "100%", borderCollapse: "collapse" } },
+        E("thead", null, E("tr", null, ["类型", "标题", "提交人", "游戏", "时间", "状态"].map(x => E("th", { key: x, style: th }, x)))),
+        E("tbody", null, s.feedback.map(f => E("tr", { key: f.id },
+          E("td", { style: td }, f.kind === "bug" ? "Bug" : "建议"), E("td", { style: td }, f.title),
+          E("td", { style: Object.assign({ color: "#6b7894" }, td) }, f.user), E("td", { style: Object.assign({ color: "#6b7894" }, td) }, f.game),
+          E("td", { style: Object.assign({ color: "#6b7894" }, td) }, f.date),
+          E("td", { style: td }, E("select", { value: f.status, onChange: e => this.setFbStatus(f.id, e.target.value), style: { minHeight: 30, padding: "4px 8px", border: "1px solid #e7ecf6", borderRadius: 8, fontSize: 13, background: "#fff" } },
+            ["新提交", "处理中", "已关闭"].map(x => E("option", { key: x, value: x }, x))))))))]);
+    } else {
+      const field = (label, key) => E("div", { key: key, style: { display: "flex", flexDirection: "column", gap: 8 } },
+        E("label", { style: { font: "500 13px 'Noto Sans SC'" } }, label),
+        E("input", { value: s.settings[key], onChange: e => this.setSetting(key, e.target.value), style: { minHeight: 40, padding: "8px 12px", border: "1px solid #e7ecf6", borderRadius: 8, fontSize: 15 } }));
+      adminBody = card([h("平台设置"), E("div", { style: { display: "flex", flexDirection: "column", gap: 16, maxWidth: 420 } },
+        field("飞书群链接", "feishu"), field("QQ 群链接", "qq"), field("QQ 群号", "qqNo"),
+        E("div", { key: "b" }, btn("保存", () => this.say("设置已保存"), "primary")))]);
+    }
+
+    return {
+      goLobby: () => this.nav("lobby"), goFeedback: () => this.nav("feedback"), goLogin: () => this.setState({ screen: "login", loginErr: "" }),
+      goRegister: () => this.setState({ screen: "register", regStep: 1, regEmailErr: "", regErr: "" }),
+      goRoadmap: () => this.nav("roadmap"), isRoadmap: scr === "roadmap", navRoadmap: scr === "roadmap" ? "#6171f0" : "#6b7894", navRoadmapBg: scr === "roadmap" ? "#eaf0ff" : "transparent", roadmapList,
+      openGroup: () => this.setState({ groupOpen: true, groupCopied: false }), closeGroup: () => this.setState({ groupOpen: false }), groupOpen: s.groupOpen,
+      qqNo: s.settings.qqNo,
+      goMe: () => this.nav("me"), goAdmin: () => this.nav(s.role === "admin" ? "admin" : "403"), logout: () => { this.setState({ role: "guest", name: "", email: "" }); this.nav("lobby"); this.say("已退出登录"); },
+      navLobby: scr === "lobby" ? "#6171f0" : "#6b7894", navLobbyBg: scr === "lobby" ? "#eaf0ff" : "transparent",
+      navFeedback: scr === "feedback" ? "#6171f0" : "#6b7894", navFeedbackBg: scr === "feedback" ? "#eaf0ff" : "transparent",
+      isGuest: !me, isLoggedIn: me, isAdmin: s.role === "admin", myName: s.name, myEmail: s.email, myUid: s.uid, myAvatar: AV[s.avatar], myPlays: s.plays,
+      isLobby: scr === "lobby", isRegister: scr === "register", isLogin: scr === "login", isMe: scr === "me", isFeedback: scr === "feedback",
+      isLaunching: scr === "launching", isGame: scr === "game", isLaunchFail: scr === "launchfail", is403: scr === "403", isAdminView: scr === "admin",
+      startVoxel: this.launch, openShare: () => this.setState({ shareOpen: true, shareCopied: false }), closeShare: () => this.setState({ shareOpen: false }),
+      shareOpen: s.shareOpen, shareUrl: "lumio.games/games/voxel-bomber/?s=a1c", shareCopyLabel: s.shareCopied ? "已复制" : "复制",
+      copyShare: () => { this.setState({ shareCopied: true }); this.say("链接已复制"); }, webShare: () => this.say("已调用系统分享"),
+      onlineTotal: s.onlineTotal, roomCount: s.roomCount, vbOnline: s.vbOnline, roomId: s.roomId,
+      roomFill: s.roomFill + "/" + s.roomCap, roomLeft: s.roomCap - s.roomFill, roomStack, scoreboard,
+      avatarGrid,
+      regStep1: s.regStep === 1, regStep2: s.regStep === 2, regEmail: s.regEmail, regCode: s.regCode, regPwd: s.regPwd, regName: s.regName,
+      regEmailErr: s.regEmailErr, regErr: s.regErr, regEmailBorder: s.regEmailErr ? "#d9342a" : "#e7ecf6",
+      setRegEmail: e => this.setState({ regEmail: e.target.value, regEmailErr: "" }), setRegCode: e => this.setState({ regCode: e.target.value }),
+      setRegPwd: e => this.setState({ regPwd: e.target.value }), setRegName: e => this.setState({ regName: e.target.value }),
+      codeBoxes: Array.from({ length: 6 }).map((_, i) => E("input", {
+        key: i, value: s.regCode[i] || "", inputMode: "numeric", maxLength: 1,
+        ref: el => { this.codeEls = this.codeEls || []; this.codeEls[i] = el; },
+        onChange: e => this.setCodeAt(i, e.target.value),
+        onKeyDown: e => { if (e.key === "Backspace" && !s.regCode[i] && i > 0 && this.codeEls[i - 1]) this.codeEls[i - 1].focus(); },
+        onPaste: e => { const t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6); if (t) { e.preventDefault(); this.setState({ regCode: t, regErr: "" }); } },
+        style: {
+          width: 48, height: 56, textAlign: "center", border: "1px solid " + (s.regCode[i] ? "#7c8cff" : "#e7ecf6"),
+          borderRadius: 12, background: "#fff", font: "700 22px Inter", color: "#243056"
+        }
+      })),
+      sendCode: this.sendCode, sendCodeLabel: s.cooldown ? "重新发送（" + s.cooldown + "s）" : "发送验证码",
+      backStep1: () => this.setState({ regStep: 1 }), finishRegister: this.finishRegister,
+      step1Bg: s.regStep === 1 ? "linear-gradient(135deg,#7c8cff,#6171f0)" : "#e3f7ed", step1Fg: s.regStep === 1 ? "#fff" : "#1f8a5b",
+      step2Bg: s.regStep === 2 ? "linear-gradient(135deg,#7c8cff,#6171f0)" : "#eaf0ff", step2Fg: s.regStep === 2 ? "#fff" : "#9aa6be",
+      loginEmail: s.loginEmail, loginPwd: s.loginPwd, loginErr: s.loginErr, loginBorder: s.loginErr ? "#d9342a" : "#e7ecf6",
+      loginTitle: s.next ? "登录后继续" : "登录", loginSub: s.next ? "登录后直接进入《体素炸弹人》。" : "欢迎回来。", loginCta: s.next ? "登录并进入" : "登录",
+      setLoginEmail: e => this.setState({ loginEmail: e.target.value, loginErr: "" }), setLoginPwd: e => this.setState({ loginPwd: e.target.value, loginErr: "" }),
+      doLogin: this.doLogin,
+      copyUid: () => { this.setState({ copied: true }); this.say("UID 已复制"); }, copyLabel: s.copied ? "已复制" : "复制",
+      fbTitle: s.fbTitle, fbBody: s.fbBody, fbGame: s.fbGame, fbContact: s.fbContact, fbErr: s.fbErr,
+      fbTitleCount: s.fbTitle.length, fbBodyCount: s.fbBody.length,
+      setFbTitle: e => this.setState({ fbTitle: e.target.value.slice(0, 80), fbErr: "" }), setFbBody: e => this.setState({ fbBody: e.target.value.slice(0, 4000), fbErr: "" }),
+      setFbGame: e => this.setState({ fbGame: e.target.value }), setFbContact: e => this.setState({ fbContact: e.target.value }),
+      pickBug: () => this.setState({ fbKind: "bug" }), pickIdea: () => this.setState({ fbKind: "idea" }),
+      bugBg: s.fbKind === "bug" ? "#eaf0ff" : "#fff", bugBorder: s.fbKind === "bug" ? "#c9d3f5" : "#e7ecf6", bugFg: s.fbKind === "bug" ? "#6171f0" : "#6b7894",
+      ideaBg: s.fbKind === "idea" ? "#eaf0ff" : "#fff", ideaBorder: s.fbKind === "idea" ? "#c9d3f5" : "#e7ecf6", ideaFg: s.fbKind === "idea" ? "#6171f0" : "#6b7894",
+      toggleAnon: () => this.setState({ fbAnon: !s.fbAnon }), anonBg: s.fbAnon ? "#6171f0" : "#fff", anonMark: s.fbAnon ? "✓" : "",
+      submitFb: this.submitFb, myFeedbackList,
+      shotList: s.shots.map((sh, i) => E("div", { key: sh.id, style: { position: "relative", width: 96, height: 72, borderRadius: 10, overflow: "hidden", border: "1px solid #e7ecf6", background: "#eaf0ff" } },
+        E("img", { src: sh.url, alt: "", style: { width: "100%", height: "100%", objectFit: "cover", display: "block" } }),
+        E("button", { onClick: () => this.removeShot(sh.id), style: { position: "absolute", right: 4, top: 4, width: 20, height: 20, borderRadius: "50%", border: 0, background: "rgba(30,42,58,.72)", color: "#fff", font: "700 11px Inter", cursor: "pointer", lineHeight: 1 } }, "✕"))),
+      dropBorder: s.dragOver ? "#7c8cff" : "#c9d3f5", dropBg: s.dragOver ? "#f3f6ff" : "#f7faff",
+      onPaste: this.onPaste, onDrop: this.onDrop, onDragOver: e => { e.preventDefault(); if (!s.dragOver) this.setState({ dragOver: true }); },
+      onPickFiles: e => { this.addShots(Array.from(e.target.files || [])); e.target.value = ""; },
+      launchPct: s.launchPct, launchStage: s.launchStage,
+      inviteOpen: s.inviteOpen, openInvite: () => this.setState({ inviteOpen: true, inviteCopied: false }), closeInvite: () => this.setState({ inviteOpen: false }),
+      inviteUrl: "lumio.games/games/voxel-bomber/?room=" + s.roomId, inviteCopyLabel: s.inviteCopied ? "已复制" : "复制邀请链接",
+      copyInvite: () => { this.setState({ inviteCopied: true }); this.say("邀请链接已复制"); },
+      addFriend: () => s.roomFill >= s.roomCap ? this.say("房间满了") : (this.setState({ roomFill: s.roomFill + 1, onlineTotal: s.onlineTotal + 1, vbOnline: s.vbOnline + 1 }), this.say((s.roomFill + 1) + "/" + s.roomCap)),
+      adminNav, adminBody,
+      confirmOpen: !!s.confirm, confirmTitle: s.confirm ? s.confirm.title : "", confirmBody: s.confirm ? s.confirm.body : "", confirmCta: s.confirm ? s.confirm.cta : "",
+      closeConfirm: () => this.setState({ confirm: null }), confirmAct: () => { const c = s.confirm; this.setState({ confirm: null }); if (c) c.act(); },
+      toast: s.toast
+    };
+  }
+
+  setCodeAt = (i, v) => {
+    const d = (v || "").replace(/\D/g, "").slice(-1);
+    const arr = this.state.regCode.padEnd(6, " ").split("");
+    arr[i] = d || " ";
+    this.setState({ regCode: arr.join("").replace(/\s+$/, ""), regErr: "" });
+    if (d && i < 5 && this.codeEls && this.codeEls[i + 1]) this.codeEls[i + 1].focus();
+  };
+
+  sendCode = () => {
+    const v = this.state.regEmail.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) return this.setState({ regEmailErr: "邮箱格式不对" });
+    if (v === "alice@example.com") return this.setState({ regEmailErr: "这个邮箱已经注册过了，直接登录？" });
+    this.setState({ regStep: 2, regEmailErr: "", cooldown: 47 });
+    clearInterval(this.tick);
+    this.tick = setInterval(() => this.setState(st => {
+      if (st.cooldown <= 1) { clearInterval(this.tick); return { cooldown: 0 }; }
+      return { cooldown: st.cooldown - 1 };
+    }), 1000);
+    this.say("验证码已发送");
+  };
+
+  finishRegister = () => {
+    const { regCode, regPwd, regName, regEmail } = this.state;
+    if (regCode.trim() !== "482193") return this.setState({ regErr: "验证码不对" });
+    if (regPwd.length < 8) return this.setState({ regErr: "密码至少 8 位" });
+    if (!/^[A-Za-z][A-Za-z0-9_-]{2,31}$/.test(regName)) return this.setState({ regErr: "用户名需字母开头，3–32 位" });
+    if (/^Bot\d/i.test(regName)) return this.setState({ regErr: "Bot 开头加数字的名字是保留的，换一个" });
+    if (this.state.users.some(u => u.name === regName)) return this.setState({ regErr: regName + " 已经有人用了" });
+    const uid = 100050 + this.state.users.length;
+    this.setState(st => ({
+      role: "player", name: regName, email: regEmail, uid, regErr: "", regCode: "", regPwd: "",
+      users: st.users.concat([{ uid, name: regName, email: regEmail, role: "player", banned: false, joined: "2026-09-04" }])
+    }));
+    this.nav("lobby"); this.say("注册成功，欢迎来到 Lumio");
+  };
+
+  doLogin = () => {
+    const { loginEmail, loginPwd, next } = this.state;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(loginEmail) || loginPwd.length < 8) return this.setState({ loginErr: "邮箱或密码不对" });
+    if (loginEmail === "bob@example.com") return this.setState({ loginErr: "该账号已被停用" });
+    const admin = loginEmail === "admin@lumio.games";
+    const found = this.state.users.find(u => u.email === loginEmail);
+    this.setState({
+      role: admin ? "admin" : "player", name: found ? found.name : loginEmail.split("@")[0],
+      email: loginEmail, uid: found ? found.uid : 100042, loginErr: "", loginPwd: "", next: null
+    });
+    if (next === "game") this.launch(); else { this.nav(admin ? "admin" : "lobby"); this.say("登录成功"); }
+  };
+
+  addShots = files => {
+    const imgs = files.filter(f => f.type && f.type.indexOf("image/") === 0);
+    if (!imgs.length) return;
+    this.setState(st => ({
+      dragOver: false,
+      shots: st.shots.concat(imgs.map(f => ({ id: Math.random().toString(36).slice(2), url: URL.createObjectURL(f) }))).slice(0, 4)
+    }));
+    this.say("已添加截图");
+  };
+  removeShot = id => this.setState(st => ({ shots: st.shots.filter(x => x.id !== id) }));
+  onPaste = e => {
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    const files = [];
+    for (let i = 0; i < items.length; i++) { const f = items[i].getAsFile && items[i].getAsFile(); if (f) files.push(f); }
+    if (files.length) { e.preventDefault(); this.addShots(files); }
+  };
+  onDrop = e => { e.preventDefault(); this.addShots(Array.from((e.dataTransfer && e.dataTransfer.files) || [])); };
+
+  submitFb = () => {
+    const { fbTitle, fbBody, fbKind, fbGame, fbAnon, name, role } = this.state;
+    if (!fbTitle.trim()) return this.setState({ fbErr: "标题不能为空" });
+    if (fbBody.trim().length < 5) return this.setState({ fbErr: "请填写详情" });
+    this.setState(st => ({
+      feedback: [{ id: Date.now(), kind: fbKind, title: fbTitle.trim(), user: (fbAnon || role === "guest") ? "匿名" : name, game: fbGame || "—", date: "09-04", status: "新提交" }].concat(st.feedback),
+      fbTitle: "", fbBody: "", fbContact: "", fbErr: "", shots: []
+    }));
+    this.say("收到了，谢谢");
+  };
+
+  askBan = u => this.setState({ confirm: { title: "停用 " + u.name + "？", body: "停用后该账号无法登录和进入游戏，可随时恢复。", cta: "确认停用", act: () => { this.setState(st => ({ users: st.users.map(x => x.uid === u.uid ? Object.assign({}, x, { banned: true }) : x) })); this.say(u.name + " 已停用"); } } });
+  unban = uid => { this.setState(st => ({ users: st.users.map(x => x.uid === uid ? Object.assign({}, x, { banned: false }) : x) })); this.say("已恢复"); };
+  toggleRole = uid => { this.setState(st => ({ users: st.users.map(x => x.uid === uid ? Object.assign({}, x, { role: x.role === "admin" ? "player" : "admin" }) : x) })); this.say("角色已更新"); };
+  togglePub = slug => { this.setState(st => ({ games: st.games.map(g => g.slug === slug ? Object.assign({}, g, { published: !g.published }) : g) })); this.say("目录已更新"); };
+  setCap = (slug, v) => this.setState(st => ({ games: st.games.map(g => g.slug === slug ? Object.assign({}, g, { cap: v.replace(/\D/g, "") }) : g), roomCap: slug === "voxel-bomber" ? (parseInt(v, 10) || st.roomCap) : st.roomCap }));
+  setFbStatus = (id, v) => { this.setState(st => ({ feedback: st.feedback.map(f => f.id === id ? Object.assign({}, f, { status: v }) : f) })); this.say("状态已更新"); };
+  setSetting = (k, v) => this.setState(st => ({ settings: Object.assign({}, st.settings, { [k]: v }) }));
+}
+</script>
+</body>
+</html>

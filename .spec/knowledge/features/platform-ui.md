@@ -1,6 +1,6 @@
 ---
 name: platform-ui
-description: 平台网页视觉——GameTech 身份色与纸片卡片按 16px 重定的令牌与原语；改大厅或后台外观时查
+description: 平台网页视觉——GameTech 令牌、.ui-* 原语与高保真屏幕原型；改大厅或后台外观时查
 metadata:
   type: doc
   status: 设计中
@@ -8,9 +8,9 @@ metadata:
 
 # 平台网页视觉
 
-网页 SPA 的视觉真值在 `web/src/styles/`。令牌来自视频仓 `@lumio/video-ds` 的 **GameTech** 主题（与 `blog.lumio.games`、GitHub 徽章同一套身份色），按 16px 网页尺度重写，不是把视频 CSS 原样搬进来。
+令牌与 `.ui-*` 原语的真值在 `web/src/styles/`。令牌来自视频仓 `@lumio/video-ds` 的 **GameTech** 主题（与 `blog.lumio.games`、GitHub 徽章同一套身份色），按 16px 网页尺度重写，不是把视频 CSS 原样搬进来。
 
-活样张：用浏览器打开 [`web/design-preview.html`](../../../web/design-preview.html)。
+屏幕级外观与交互的真值是 [`web/docs/prototype/Lumio Prototype.dc.html`](../../../web/docs/prototype/Lumio%20Prototype.dc.html)（说明见 [`web/docs/prototype/README.md`](../../../web/docs/prototype/README.md)，决策 0005）。令牌 / 原语活样张：[`web/design-preview.html`](../../../web/design-preview.html)。实现时用 `.ui-*` 在 React 里重建，不复制原型 HTML。
 
 ## 背景 / 目标
 
@@ -57,9 +57,12 @@ metadata:
 | `web/src/styles/primitives.css` | 导航、卡片、按钮、表单、表格、看板 |
 | `web/src/styles/deco.css` | 品牌标、体素、色调块 |
 | `web/src/styles/index.css` | 以上四份的入口；SPA `main.tsx` 只 import 这一份 |
-| `web/design-preview.html` | 无构建即可打开的活样张 |
+| `web/design-preview.html` | 令牌与原语活样张（组件墙，不是页面稿） |
+| `web/docs/prototype/Lumio Prototype.dc.html` | 高保真可点原型（屏幕级真值；需同目录 `support.js`） |
+| `web/docs/prototype/README.md` | 原型屏幕、交互、令牌与演示账号说明 |
+| `web/docs/prototype/reference/` | 玩家端静态画板与早期线框，只作比对 |
 
-P0-1 搭 `web/` 脚手架时必须保留本目录与活样张；`main.tsx` 全局引入 `src/styles/index.css`。
+P0-1 搭 `web/` 脚手架时必须保留 `web/src/styles/` 与 `web/design-preview.html`；`main.tsx` 全局引入 `src/styles/index.css`。后续 SPA 页对照原型，不对照组件墙。
 
 ## 待解决
 
@@ -69,6 +72,7 @@ P0-1 搭 `web/` 脚手架时必须保留本目录与活样张；`main.tsx` 全�
 
 ## 相关
 
-- [决策 0004](../../decisions/0004-platform-ui-from-gametech.md)
-- [`platform.md`](platform.md)、[`lobby-launch.md`](lobby-launch.md)、[`admin-analytics.md`](admin-analytics.md)
+- [决策 0004](../../decisions/0004-platform-ui-from-gametech.md)、[决策 0005](../../decisions/0005-platform-ui-hifi-prototype.md)
+- [`platform.md`](platform.md)、[`lobby-launch.md`](lobby-launch.md)、[`admin-analytics.md`](admin-analytics.md)、[`feedback.md`](feedback.md)、[`account.md`](account.md)
 - [`standards/code-style.md`](../standards/code-style.md)
+- 开工提示词：[`plans/2026-09-04-platform-spa-from-prototype-prompt.md`](../../plans/2026-09-04-platform-spa-from-prototype-prompt.md)

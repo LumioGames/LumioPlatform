@@ -31,7 +31,7 @@ metadata:
 | [`features/lobby-launch.md`](features/lobby-launch.md) | 大厅与启动设计——游戏目录、静态游戏页托管、launch 端口与房间分配器接口;改大厅或接入新游戏前查 |
 | [`features/feedback.md`](features/feedback.md) | 反馈设计——bug / 建议表单、状态流转、社群外链设置;改反馈或群链接前查 |
 | [`features/admin-analytics.md`](features/admin-analytics.md) | 运营后台与埋点设计——管理员角色、用户 / 登录记录 / 封禁、事件上报与看板聚合;改后台或埋点前查 |
-| [`features/platform-ui.md`](features/platform-ui.md) | 平台网页视觉——GameTech 身份色与纸片卡片按 16px 重定的令牌与原语；改大厅或后台外观时查 |
+| [`features/platform-ui.md`](features/platform-ui.md) | 平台网页视觉——GameTech 令牌、.ui-* 原语与高保真屏幕原型；改大厅或后台外观时查 |
 
 ## lessons(经验教训 · 复发问题暂存区)
 
