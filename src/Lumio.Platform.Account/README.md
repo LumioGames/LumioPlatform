@@ -1,3 +1,3 @@
 # LumioPlatform account boundary
 
-This project reserves the account-domain boundary for later cards. P0-1 intentionally contains no account implementation or business endpoints.
+This project owns the single account authority for LumioPlatform. `AccountRuntime` projects durable account identity and Argon2id credentials from PostgreSQL through `PostgresAccountStore`; the WebSocket transport is hosted by `Lumio.Platform.App` at `/account` using the frozen `lumio.account-port.v1` contract.

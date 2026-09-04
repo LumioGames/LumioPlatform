@@ -1,4 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup><RootNamespace>Lumio.Platform.Account</RootNamespace><AssemblyName>Lumio.Platform.Account</AssemblyName></PropertyGroup>
   <ItemGroup><ProjectReference Include="../Lumio.Platform/Lumio.Platform.csproj" /></ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" />
+    <PackageReference Include="Isopoh.Cryptography.Argon2" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Lumio.Platform.Tests" />
+    <InternalsVisibleTo Include="Lumio.Platform.App" />
+  </ItemGroup>
 </Project>
