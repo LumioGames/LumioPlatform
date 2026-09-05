@@ -90,6 +90,9 @@
   --ui-motion-float-marker: 5.4s;
   --ui-motion-hover: 180ms;
   --ui-motion-slow: 900ms;
+  --ui-motion-pulse: 2.6s;
+  --ui-motion-delay-copy: 80ms;
+  --ui-motion-delay-art: 140ms;
   --ui-ease: cubic-bezier(0.32, 0.72, 0, 1);
 
   --ui-nav-h: 3.5rem;

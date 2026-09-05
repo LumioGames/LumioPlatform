@@ -39,7 +39,7 @@
   align-items: flex-start;
   gap: var(--ui-sp-4);
   max-width: 36rem;
-  animation: lm-in var(--ui-motion-enter) var(--ui-ease) 80ms both;
+  animation: lm-in var(--ui-motion-enter) var(--ui-ease) var(--ui-motion-delay-copy) both;
 }
 
 .heroLead { max-width: 32rem; color: var(--ui-text-2); font-size: 1.08rem; line-height: 1.65; }
@@ -49,16 +49,16 @@
   place-items: center;
   min-height: 15rem;
   position: relative;
-  animation: lm-in var(--ui-motion-enter) var(--ui-ease) 140ms both;
+  animation: lm-in var(--ui-motion-enter) var(--ui-ease) var(--ui-motion-delay-art) both;
 }
 
 .heroCore { --ui-vox: 5.5rem; z-index: 2; filter: drop-shadow(0 24px 22px rgba(97, 113, 240, .28)); }
 .heroOrbit { position: absolute; width: 12rem; height: 7rem; border: 1px solid rgba(124, 140, 255, .28); border-radius: 50%; transform: rotate(-24deg); }
 .heroShard { --lm-float-angle: 45deg; position: absolute; border-radius: 0.8rem; transform: rotate(45deg); box-shadow: 0 18px 28px -18px rgba(36, 48, 86, .45); animation: lm-float var(--ui-motion-float) ease-in-out infinite; }
-.heroShardOne { width: 3.3rem; height: 3.3rem; top: 15%; right: 22%; background: var(--ui-primary); opacity: .64; animation-delay: 80ms; }
-.heroShardTwo { width: 2.4rem; height: 2.4rem; top: 48%; right: 8%; background: var(--ui-mint); opacity: .72; animation-duration: var(--ui-motion-float-mid); animation-delay: 160ms; }
-.heroShardThree { width: 1.8rem; height: 1.8rem; bottom: 12%; right: 31%; background: var(--ui-amber); opacity: .8; animation-duration: var(--ui-motion-float-short); animation-delay: 240ms; }
-.heroShardFour { width: 1.35rem; height: 1.35rem; bottom: 28%; right: 3%; background: var(--ui-rose); opacity: .72; animation-duration: var(--ui-motion-float-long); animation-delay: 320ms; }
+.heroShardOne { width: 3.3rem; height: 3.3rem; top: 15%; right: 22%; background: var(--ui-primary); opacity: .64; animation-delay: var(--ui-motion-delay-copy); }
+.heroShardTwo { width: 2.4rem; height: 2.4rem; top: 48%; right: 8%; background: var(--ui-mint); opacity: .72; animation-duration: var(--ui-motion-float-mid); animation-delay: calc(var(--ui-motion-delay-copy) * 2); }
+.heroShardThree { width: 1.8rem; height: 1.8rem; bottom: 12%; right: 31%; background: var(--ui-amber); opacity: .8; animation-duration: var(--ui-motion-float-short); animation-delay: calc(var(--ui-motion-delay-copy) * 3); }
+.heroShardFour { width: 1.35rem; height: 1.35rem; bottom: 28%; right: 3%; background: var(--ui-rose); opacity: .72; animation-duration: var(--ui-motion-float-long); animation-delay: calc(var(--ui-motion-delay-copy) * 4); }
 
 .section {
   display: flex;
@@ -81,7 +81,7 @@
 
 .statusRail { display: flex; align-items: center; gap: var(--ui-sp-3); color: var(--ui-text-2); font-size: var(--ui-fs-cap); }
 .statusRail strong { color: var(--ui-title); font-family: var(--ui-font-num); font-size: var(--ui-fs-cap); }
-.onlineDot, :global(.ui-online-dot) { display: inline-block; width: .55rem; height: .55rem; border-radius: .2rem; background: var(--ui-up); animation: lm-online-pulse 2.6s ease-in-out infinite; }
+.onlineDot, :global(.ui-online-dot) { display: inline-block; width: .55rem; height: .55rem; border-radius: .2rem; background: var(--ui-up); animation: lm-online-pulse var(--ui-motion-pulse) ease-in-out infinite; }
 
 .coverTag { position: absolute; top: var(--ui-sp-3); left: var(--ui-sp-3); padding: .25rem .55rem; color: var(--ui-card-fill); background: color-mix(in srgb, var(--tone, var(--ui-primary)) 80%, var(--ui-title)); border-radius: var(--ui-radius-pill); font-size: var(--ui-fs-micro); font-weight: 700; }
 .page :global(.ui-cover) { position: relative; }
@@ -90,13 +90,12 @@
 .coverScene::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.42) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.42) 1px, transparent 1px); background-size: 28px 28px; }
 .coverBlockMain, .coverBlockShadow, .coverBlockSmall { --lm-float-angle: 45deg; position: absolute; display: block; border-radius: .7rem; transform: rotate(45deg); animation: lm-float var(--ui-motion-float) ease-in-out infinite; }
 .coverBlockMain { width: 4.2rem; height: 4.2rem; left: 44%; top: 30%; background: color-mix(in srgb, var(--tone) 74%, white); box-shadow: 1rem 1rem 0 color-mix(in srgb, var(--tone) 34%, white); }
-.coverBlockShadow { width: 2rem; height: 2rem; left: 24%; top: 58%; background: color-mix(in srgb, var(--tone) 52%, white); opacity: .7; animation-duration: var(--ui-motion-float-mid); animation-delay: .2s; }
-.coverBlockSmall { width: 1.45rem; height: 1.45rem; right: 22%; top: 20%; background: color-mix(in srgb, var(--tone) 90%, white); opacity: .74; animation-duration: var(--ui-motion-float-short); animation-delay: .45s; }
+.coverBlockShadow { width: 2rem; height: 2rem; left: 24%; top: 58%; background: color-mix(in srgb, var(--tone) 52%, white); opacity: .7; animation-duration: var(--ui-motion-float-mid); animation-delay: calc(var(--ui-motion-delay-copy) * 2); }
+.coverBlockSmall { width: 1.45rem; height: 1.45rem; right: 22%; top: 20%; background: color-mix(in srgb, var(--tone) 90%, white); opacity: .74; animation-duration: var(--ui-motion-float-short); animation-delay: calc(var(--ui-motion-delay-copy) * 3); }
 .coverMarker { --lm-float-angle: 45deg; position: absolute; width: .7rem; height: .7rem; right: 31%; bottom: 20%; border-radius: .2rem; background: white; opacity: .75; transform: rotate(45deg); animation: lm-float var(--ui-motion-float-marker) ease-in-out infinite reverse; }
 .onlinePill { position: absolute; right: var(--ui-sp-3); bottom: var(--ui-sp-3); display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .55rem; border-radius: var(--ui-radius-pill); background: rgba(255,255,255,.92); color: var(--ui-up); font: 700 var(--ui-fs-micro) var(--ui-font-num); }
 .page :global(.ui-cover) > :global(.ui-pill--soon) { position: absolute; right: var(--ui-sp-3); bottom: var(--ui-sp-3); }
 .cardTitle { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-sp-2); }.cardTitle h3 { margin: 0; }.roomRow { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-sp-2); }.metaRow { display: flex; gap: var(--ui-sp-3); }.shareButton { align-self: flex-start; }
-.page :global(.ui-card--game) { animation-delay: var(--motion-delay, 0ms); }
 .page :global(.ui-card--game:hover), .page :global(.ui-card--game:focus-within) { transform: translateY(-4px); }
 .page :global(.ui-card--game:hover) .coverScene, .page :global(.ui-card--game:focus-within) .coverScene { transform: translateX(5px); transition: transform var(--ui-motion-hover) var(--ui-ease); }
 .cardMint :global(.ui-cover) { filter: saturate(.82); }.cardRose :global(.ui-cover) { filter: saturate(.88); }

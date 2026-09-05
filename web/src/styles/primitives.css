@@ -73,7 +73,7 @@
 
 .ui-motion-enter {
   animation: lm-in var(--ui-motion-enter) var(--ui-ease) both;
-  animation-delay: var(--motion-delay, 0ms);
+  animation-delay: calc(var(--ui-motion-stagger) * var(--motion-index, 0));
 }
 
 .ui-online-dot {
