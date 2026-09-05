@@ -25,8 +25,11 @@ afterEach(() => {
 
 test('renders the lobby route', () => {
   renderAt('/');
-  expect(screen.getByRole('heading', { name: '发现下一场游戏' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: '开源体素游戏平台' })).toBeInTheDocument();
   expect(screen.getByRole('link', { name: '反馈' })).toBeInTheDocument();
+  expect(screen.getByText('12 人在线')).toBeInTheDocument();
+  expect(screen.getByText('最近更新')).toBeInTheDocument();
+  expect(screen.getByLabelText('体素炸弹人在线状态')).toHaveTextContent('5/8');
 });
 
 test('shows a 403 page when a player visits admin routes', () => {
@@ -61,7 +64,7 @@ test('renders roadmap and game launch surfaces', () => {
 test('published lobby game exposes a launch action', () => {
   renderAt('/');
   expect(screen.getByRole('button', { name: '开始游戏' })).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Roadmap' })).toBeInTheDocument();
+  expect(screen.getAllByRole('link', { name: 'Roadmap' })).toHaveLength(2);
 });
 
 test('admin surfaces expose operational tables and settings', () => {

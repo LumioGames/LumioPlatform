@@ -71,6 +71,15 @@
 }
 .ui-card--game.is-soon:hover { transform: none; box-shadow: var(--ui-card-drop); }
 
+.ui-motion-enter {
+  animation: lm-in var(--ui-motion-enter) var(--ui-ease) both;
+  animation-delay: var(--motion-delay, 0ms);
+}
+
+.ui-online-dot {
+  flex: 0 0 auto;
+}
+
 .ui-cover {
   aspect-ratio: 16 / 10;
   background: linear-gradient(150deg,
