@@ -25,11 +25,18 @@ export function LobbyPage() {
           <div className="ui-actions"><a className="ui-btn ui-btn--primary" href="#games"><span aria-hidden="true">▶</span> 开始游戏</a><a className="ui-btn ui-btn--quiet" href="https://github.com/LumioGames" target="_blank" rel="noreferrer"><span aria-hidden="true">{ }</span> 开源引擎 ↗</a><Link className="ui-btn ui-btn--ghost" to="/roadmap"><span aria-hidden="true">◷</span> Roadmap</Link></div>
         </div>
         <div className={styles.heroArt} aria-hidden="true">
+          <div className={styles.heroStage}>
+            <div className={styles.stageLabel}><span className="ui-online-dot" /> LIVE WORLD <b>VB-1</b></div>
+            <div className={styles.stageBoard}>{Array.from({ length: 12 }, (_, index) => <span key={index} />)}</div>
+            <span className={styles.stagePlayer} />
+            <span className={styles.stageBomb} />
+            <span className={styles.stageSpark}>✦</span>
+            <div className={styles.stageHud}><strong>5/8</strong><span>玩家在线</span></div>
+          </div>
           <span className={`${styles.heroShard} ${styles.heroShardOne}`} />
           <span className={`${styles.heroShard} ${styles.heroShardTwo}`} />
           <span className={`${styles.heroShard} ${styles.heroShardThree}`} />
           <span className={`${styles.heroShard} ${styles.heroShardFour}`} />
-          <div className={`ui-voxel ${styles.heroCore}`}><i /><i /><i /></div>
           <span className={styles.heroOrbit} />
         </div>
       </section>

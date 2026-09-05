@@ -39,10 +39,11 @@
   align-items: flex-start;
   gap: var(--ui-sp-4);
   max-width: 44rem;
+  min-width: 0;
   animation: lm-in var(--ui-motion-enter) var(--ui-ease) var(--ui-motion-delay-copy) both;
 }
 
-.heroLead { max-width: 32rem; color: var(--ui-text-2); font-size: 1.08rem; line-height: 1.65; }
+.heroLead { max-width: 32rem; color: var(--ui-text-2); font-size: 1.08rem; line-height: 1.65; overflow-wrap: anywhere; }
 
 .heroArt {
   display: grid;
@@ -52,7 +53,20 @@
   animation: lm-in var(--ui-motion-enter) var(--ui-ease) var(--ui-motion-delay-art) both;
 }
 
-.heroCore { --ui-vox: 5.5rem; z-index: 2; filter: drop-shadow(0 24px 22px rgba(97, 113, 240, .28)); }
+.heroStage { position: relative; z-index: 3; width: min(100%, 20rem); aspect-ratio: 1.25; transform: rotate(-4deg); }
+.stageBoard { position: absolute; inset: 2.2rem .6rem 1rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: .38rem; padding: .75rem; border: 1px solid rgba(97, 113, 240, .25); border-radius: 1.1rem; background: rgba(255,255,255,.38); box-shadow: 0 28px 40px -26px rgba(53,68,120,.55); transform: skewY(-8deg) rotate(-8deg); }
+.stageBoard span { border-radius: .45rem; background: rgba(124, 140, 255, .2); border: 1px solid rgba(124, 140, 255, .16); }
+.stageBoard span:nth-child(3n) { background: rgba(93, 226, 198, .28); }.stageBoard span:nth-child(5n) { background: rgba(255, 184, 107, .3); }
+.stageLabel { position: absolute; top: 0; left: 1rem; z-index: 4; display: flex; align-items: center; gap: .45rem; padding: .38rem .65rem; border: 1px solid rgba(255,255,255,.75); border-radius: var(--ui-radius-pill); background: rgba(255,255,255,.86); color: var(--ui-primary-d); font: 800 var(--ui-fs-micro) var(--ui-font-num); letter-spacing: .08em; box-shadow: 0 8px 20px -12px rgba(53,68,120,.55); }
+.stageLabel b { color: var(--ui-muted); font-weight: 700; }
+.stagePlayer { position: absolute; z-index: 5; left: 46%; top: 43%; width: 2.8rem; height: 2.8rem; border-radius: .65rem; background: var(--ui-primary); box-shadow: .55rem .55rem 0 rgba(97,113,240,.28), 0 18px 24px -16px rgba(53,68,120,.8); transform: rotate(45deg); animation: stage-step 2.8s ease-in-out infinite; }
+.stageBomb { position: absolute; z-index: 5; right: 22%; bottom: 24%; width: 1.65rem; height: 1.65rem; border-radius: 50%; background: var(--ui-ink); box-shadow: 0 0 0 .35rem rgba(30,42,58,.1); animation: bomb-pulse 1.4s ease-in-out infinite; }
+.stageBomb::after { content: ""; position: absolute; width: .5rem; height: .5rem; right: -.25rem; top: -.25rem; border-radius: 50%; background: var(--ui-amber); }
+.stageSpark { position: absolute; z-index: 5; left: 29%; top: 30%; color: var(--ui-amber); font-size: 1.8rem; animation: spark-pop 1.8s ease-in-out infinite; }
+.stageHud { position: absolute; z-index: 5; right: 0; bottom: 0; display: flex; align-items: baseline; gap: .4rem; padding: .45rem .7rem; border-radius: .75rem; background: var(--ui-title); color: white; box-shadow: 0 12px 24px -14px rgba(36,48,86,.8); }.stageHud strong { font: 800 1.15rem var(--ui-font-num); color: var(--ui-mint); }.stageHud span { font-size: var(--ui-fs-micro); opacity: .78; }
+@keyframes stage-step { 0%, 100% { transform: translate(0, 0) rotate(45deg); } 50% { transform: translate(1.2rem, -.65rem) rotate(45deg); } }
+@keyframes bomb-pulse { 0%, 100% { transform: scale(.92); opacity: .8; } 50% { transform: scale(1.08); opacity: 1; } }
+@keyframes spark-pop { 0%, 100% { opacity: .2; transform: scale(.7) rotate(0); } 45% { opacity: 1; transform: scale(1.08) rotate(18deg); } }
 .heroOrbit { position: absolute; width: 12rem; height: 7rem; border: 1px solid rgba(124, 140, 255, .28); border-radius: 50%; transform: rotate(-24deg); }
 .heroShard { --lm-float-angle: 45deg; position: absolute; border-radius: 0.8rem; transform: rotate(45deg); box-shadow: 0 18px 28px -18px rgba(36, 48, 86, .45); animation: lm-float var(--ui-motion-float) ease-in-out infinite; }
 .heroShardOne { width: 3.3rem; height: 3.3rem; top: 15%; right: 22%; background: var(--ui-primary); opacity: .64; animation-delay: var(--ui-motion-delay-copy); }
@@ -103,20 +117,36 @@
 @media (max-width: 640px) {
   .page { gap: var(--ui-sp-7); }
   .hero {
-    min-height: 0;
+    min-height: 34rem;
     grid-template-columns: 1fr;
-    padding: var(--ui-sp-5);
+    padding: var(--ui-sp-5) var(--ui-sp-4);
+    align-items: start;
+    min-width: 0;
   }
-  .hero { grid-template-columns: 1fr; min-height: 19rem; }
-  .heroArt { position: absolute; inset: auto 0 0 auto; width: 9rem; min-height: 7rem; opacity: .82; pointer-events: none; transform: scale(.7); transform-origin: bottom right; }
+  .hero :global(.ui-hero) { max-width: 11ch; font-size: 2.1rem; }
+  .heroLead { width: 100%; max-width: 18rem; font-size: 1rem; line-height: 1.55; word-break: break-all; }
+  .hero :global(.ui-actions) { width: min(100%, 18rem); flex-direction: column; align-items: stretch; }
+  .hero :global(.ui-actions) :global(.ui-btn) { width: 100%; }
+  .heroArt { position: absolute; right: 50%; bottom: -.5rem; width: 15rem; height: 11rem; min-height: 0; opacity: .58; pointer-events: none; transform: translateX(50%) scale(.62); transform-origin: bottom center; }
   .heroShardThree, .heroShardFour { display: none; }
   .heroCopy { max-width: none; }
   .statusRail { width: 100%; justify-content: flex-start; }
   .sectionHeading { align-items: flex-start; flex-direction: column; }
+  .section :global(.ui-grid) { grid-template-columns: 1fr; gap: var(--ui-sp-4); }
+  .roomRow { align-items: stretch; flex-direction: column; }
+  .roomRow :global(.ui-btn) { width: 100%; }
+  .shareButton { width: 100%; }
+}
+
+@media (max-width: 380px) {
+  .hero { min-height: 34rem; }
+  .hero :global(.ui-hero) { font-size: 1.95rem; }
+  .heroArt { transform: translateX(50%) scale(.54); right: 50%; }
+  .statusRail { align-items: flex-start; flex-direction: column; gap: var(--ui-sp-2); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero, .heroCopy, .heroArt, .heroShard, .coverBlockMain, .coverBlockShadow, .coverBlockSmall, .coverMarker, .onlineDot, :global(.ui-online-dot), .page :global(.ui-motion-enter) { animation: none; }
+  .hero, .heroCopy, .heroArt, .heroShard, .coverBlockMain, .coverBlockShadow, .coverBlockSmall, .coverMarker, .onlineDot, :global(.ui-online-dot), .page :global(.ui-motion-enter), .stagePlayer, .stageBomb, .stageSpark { animation: none; }
   .page :global(.ui-card--game:hover), .page :global(.ui-card--game:focus-within) { transform: none; }
   .page :global(.ui-card--game:hover) .coverScene, .page :global(.ui-card--game:focus-within) .coverScene { transform: none; }
 }

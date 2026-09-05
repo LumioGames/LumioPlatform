@@ -64,15 +64,32 @@
   .navLinks {
     order: 3;
     width: 100%;
-    justify-content: space-between;
+    min-width: 0;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
     margin-left: 0;
     padding-top: var(--ui-sp-2);
     border-top: 1px solid var(--ui-line);
   }
 
+  .navLinks::-webkit-scrollbar { display: none; }
+  .navLinks > * { flex: 0 0 auto; }
+
   .accountActions {
-    margin-left: auto;
+    order: 2;
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+    min-width: 0;
+    max-width: none;
+    flex: 0 0 calc(100% - var(--ui-sp-3));
+    overflow: visible;
+    padding-top: var(--ui-sp-2);
+    border-top: 1px solid var(--ui-line);
   }
+
+  .accountActions .ui-btn { min-width: 0; padding-inline: .65rem; font-size: var(--ui-fs-micro); }
 
   .main {
     width: min(100% - 2 * var(--ui-sp-4), var(--ui-max));
