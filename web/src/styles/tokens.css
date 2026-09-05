@@ -84,6 +84,10 @@
   --ui-motion-enter: 320ms;
   --ui-motion-stagger: 80ms;
   --ui-motion-float: 6.4s;
+  --ui-motion-float-short: 5.8s;
+  --ui-motion-float-mid: 7.1s;
+  --ui-motion-float-long: 7.6s;
+  --ui-motion-float-marker: 5.4s;
   --ui-motion-hover: 180ms;
   --ui-motion-slow: 900ms;
   --ui-ease: cubic-bezier(0.32, 0.72, 0, 1);

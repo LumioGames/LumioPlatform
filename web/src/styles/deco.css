@@ -95,8 +95,8 @@
 }
 
 @keyframes lm-float {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -8px, 0); }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--lm-float-angle, 0deg)); }
+  50% { transform: translate3d(0, -8px, 0) rotate(var(--lm-float-angle, 0deg)); }
 }
 
 @keyframes lm-online-pulse {
