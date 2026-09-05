@@ -10,13 +10,13 @@ import { LaunchFailPage, LaunchingPage, RoadmapPage, GamePage } from '../feature
 import styles from './app.module.css';
 
 function Brand() {
-  return <Link className="ui-brand" to="/" aria-label="Lumio 平台首页"><span className="ui-brand__mark" aria-hidden="true"><span className="ui-brand__pix">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</span></span><span className="ui-brand__txt"><span className="ui-brand__name">LUMIO</span><span className="ui-brand__sub">PLATFORM</span></span></Link>;
+  return <Link className="ui-brand" to="/" aria-label="Lumio 平台首页"><span className="ui-brand__mark" aria-hidden="true"><span className="ui-brand__pix">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</span></span><span className="ui-brand__txt"><span className="ui-brand__name">Lumio</span><span className="ui-brand__sub">GAMES</span></span></Link>;
 }
 
 function Header() {
   const { user, logout } = useSession();
   const [communityOpen, setCommunityOpen] = useState(false);
-  return <header className={`ui-nav ${styles.nav}`}><Brand /><nav className={`ui-nav__links ${styles.navLinks}`} aria-label="主导航"><NavLink to="/" end>大厅</NavLink><NavLink to="/feedback">反馈</NavLink><NavLink to="/roadmap">Roadmap</NavLink><button className={`ui-btn ui-btn--quiet ui-btn--sm ${styles.communityButton}`} type="button" onClick={() => setCommunityOpen(true)}>开发者交流群</button><a href="https://github.com/LumioGames" target="_blank" rel="noreferrer">开源引擎 ↗</a>{user?.role === 'admin' && <NavLink to="/admin">管理后台</NavLink>}</nav><div className={styles.accountActions}>{user ? <><NavLink className={styles.accountLink} to="/me">{user.loginName}</NavLink><button className="ui-btn ui-btn--quiet ui-btn--sm" type="button" onClick={() => void logout()}>退出</button></> : <><Link className="ui-btn ui-btn--quiet ui-btn--sm" to="/login">登录</Link><Link className="ui-btn ui-btn--primary ui-btn--sm" to="/register">注册</Link></>}</div>{communityOpen && <CommunityDialog onClose={() => setCommunityOpen(false)} />}</header>;
+  return <header className={`ui-nav ${styles.nav}`}><Brand /><div className={styles.headerRight} data-header-right><nav className={`ui-nav__links ${styles.navLinks}`} aria-label="主导航"><NavLink to="/" end>大厅</NavLink><NavLink to="/feedback">反馈</NavLink><NavLink to="/roadmap">Roadmap</NavLink><button className={`ui-btn ui-btn--quiet ui-btn--sm ${styles.communityButton}`} type="button" onClick={() => setCommunityOpen(true)}>开发者交流群</button><a href="https://github.com/LumioGames" target="_blank" rel="noreferrer">开源引擎 ↗</a>{user?.role === 'admin' && <NavLink to="/admin">管理后台</NavLink>}</nav><div className={styles.accountActions}>{user ? <><NavLink className={styles.accountLink} to="/me">{user.loginName}</NavLink><button className="ui-btn ui-btn--quiet ui-btn--sm" type="button" onClick={() => void logout()}>退出</button></> : <><Link className="ui-btn ui-btn--quiet ui-btn--sm" to="/login">登录</Link><Link className="ui-btn ui-btn--primary ui-btn--sm" to="/register">注册</Link></>}</div></div>{communityOpen && <CommunityDialog onClose={() => setCommunityOpen(false)} />}</header>;
 }
 
 function CommunityDialog({ onClose }: { onClose: () => void }) {
@@ -25,7 +25,8 @@ function CommunityDialog({ onClose }: { onClose: () => void }) {
 
 function Shell() {
   const { user } = useSession();
-  return <div className="ui-shell" data-surface={user?.role === 'admin' ? 'admin' : 'player'}><Header /><main className={`ui-main ${styles.main}`}><Outlet /></main><footer className={styles.footer}>Lumio Platform <span aria-hidden="true">·</span> GameTech</footer></div>;
+  const location = useLocation();
+  return <div className="ui-shell" data-surface={user?.role === 'admin' ? 'admin' : 'player'}><Header /><main className={`ui-main ${styles.main} ${location.pathname === '/' ? styles.lobbyMain : ''}`}><Outlet /></main><footer className={styles.footer}>Lumio Platform <span aria-hidden="true">·</span> GameTech</footer></div>;
 }
 
 export function ForbiddenPage() {

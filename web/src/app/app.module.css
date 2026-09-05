@@ -1,16 +1,46 @@
 .nav {
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  flex-wrap: nowrap;
+}
+
+.nav :global(.ui-brand) { flex: 0 0 auto; }
+
+.headerRight {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ui-sp-4);
 }
 
 .navLinks {
-  margin-left: auto;
+  min-width: 0;
+  margin-left: 0;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.navLinks::-webkit-scrollbar { display: none; }
+.navLinks > * { flex: 0 0 auto; }
+
+.navLinks a,
+.navLinks button {
+  white-space: nowrap;
+}
+
+.nav :global(a.ui-btn--primary) {
+  color: #fff;
 }
 
 .accountActions {
   display: flex;
   align-items: center;
   gap: var(--ui-sp-2);
-  margin-left: var(--ui-sp-2);
+  flex: 0 0 auto;
+  margin-left: 0;
 }
 
 .accountLink {
@@ -29,6 +59,12 @@
 .main {
   display: flex;
   flex-direction: column;
+}
+
+.lobbyMain {
+  width: 100%;
+  max-width: none;
+  padding-inline: 0;
 }
 
 .footer {
@@ -55,10 +91,18 @@
 
 @media (max-width: 720px) {
   .nav {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     height: auto;
     min-height: var(--ui-nav-h);
     padding: var(--ui-sp-3) var(--ui-sp-4);
     gap: var(--ui-sp-3);
+  }
+
+  .nav :global(.ui-brand) { order: 1; }
+
+  .headerRight {
+    display: contents;
   }
 
   .navLinks {
@@ -83,7 +127,7 @@
     margin-left: 0;
     min-width: 0;
     max-width: none;
-    flex: 0 0 calc(100% - var(--ui-sp-3));
+    flex: 0 0 auto;
     overflow: visible;
     padding-top: var(--ui-sp-2);
     border-top: 1px solid var(--ui-line);
@@ -96,6 +140,11 @@
     padding: var(--ui-sp-5) 0 var(--ui-sp-7);
   }
 
+  .lobbyMain {
+    width: 100%;
+    padding-inline: 0;
+  }
+
   .footer {
     width: min(100% - 2 * var(--ui-sp-4), var(--ui-max));
     padding-left: 0;
@@ -106,4 +155,15 @@
     margin: var(--ui-sp-5) 0;
     padding: var(--ui-sp-5);
   }
+}
+
+@media (min-width: 721px) and (max-width: 980px) {
+  .nav {
+    padding-inline: var(--ui-sp-4);
+    gap: var(--ui-sp-3);
+  }
+
+  .headerRight { gap: var(--ui-sp-2); }
+  .navLinks { gap: var(--ui-sp-2); }
+  .accountActions .ui-btn { padding-inline: .65rem; }
 }

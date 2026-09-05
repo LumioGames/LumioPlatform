@@ -32,6 +32,13 @@ test('renders the lobby route', () => {
   expect(screen.getByLabelText('体素炸弹人在线状态')).toHaveTextContent('5/8');
 });
 
+test('keeps the brand in a locked region beside the right-side controls', () => {
+  renderAt('/');
+  const header = screen.getByRole('banner');
+  expect(header.firstElementChild).toHaveClass('ui-brand');
+  expect(header.querySelector('[data-header-right]')).toBeInTheDocument();
+});
+
 test('shows a 403 page when a player visits admin routes', () => {
   useSession.getState().setUser(player);
   renderAt('/admin');

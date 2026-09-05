@@ -1,18 +1,16 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--ui-sp-8);
+  gap: 0;
+  margin-top: calc(-1 * var(--ui-sp-6));
 }
 
 .hero {
-  min-height: 22.5rem;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.8fr);
-  align-items: center;
-  gap: var(--ui-sp-6);
-  padding: var(--ui-sp-7);
-  border: 1px solid var(--ui-line);
-  border-radius: var(--ui-radius);
+  width: 100%;
+  margin-left: 0;
+  min-height: 14.75rem;
+  padding: 0;
+  background: linear-gradient(150deg, #eef1ff, #e6f7f2);
   overflow: hidden;
   isolation: isolate;
   animation: lm-in var(--ui-motion-enter) var(--ui-ease) both;
@@ -24,50 +22,66 @@
   inset: 0;
   pointer-events: none;
   background: repeating-linear-gradient(135deg, transparent 0 34px, rgba(124, 140, 255, 0.045) 35px 36px);
-  mask-image: linear-gradient(110deg, transparent 25%, #000 72%);
+  mask-image: linear-gradient(160deg, #000 8%, transparent 62%);
 }
 
+.heroInner,
 .heroCopy,
 .heroArt {
   position: relative;
   z-index: 1;
 }
 
+.heroInner {
+  width: min(100% - 2 * var(--ui-sp-6), var(--ui-max));
+  min-height: 14.75rem;
+  margin: 0 auto;
+  padding: var(--ui-sp-6) 0 var(--ui-sp-5);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-sp-5);
+}
+
+.heroLogo {
+  width: 6rem;
+  height: 6rem;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 1.6rem;
+  background: linear-gradient(150deg, var(--ui-primary), #9aa6ff);
+  box-shadow: 0 26px 52px -18px rgba(124, 140, 255, .8), inset 0 2px 0 rgba(255, 255, 255, .45);
+}
+
+.heroLogo > span {
+  display: grid;
+  grid-template-columns: repeat(3, .875rem);
+  grid-template-rows: repeat(3, .875rem);
+  gap: .25rem;
+}
+
+.heroLogo i { background: #fff; border-radius: .2rem; }
+.heroLogo i:nth-child(even) { opacity: .35; }
+
 .heroCopy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ui-sp-4);
+  gap: .5rem;
   max-width: 44rem;
   min-width: 0;
+  padding-top: .25rem;
   animation: lm-in var(--ui-motion-enter) var(--ui-ease) var(--ui-motion-delay-copy) both;
 }
 
-.heroLead { max-width: 32rem; color: var(--ui-text-2); font-size: 1.08rem; line-height: 1.65; overflow-wrap: anywhere; }
+.heroSub { color: var(--ui-faint); font: 700 .875rem var(--ui-font-num); letter-spacing: .18em; }
 
 .heroArt {
-  display: grid;
-  place-items: center;
-  min-height: 15rem;
-  position: relative;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   animation: lm-in var(--ui-motion-enter) var(--ui-ease) var(--ui-motion-delay-art) both;
 }
-
-.heroStage { position: relative; z-index: 3; width: min(100%, 20rem); aspect-ratio: 1.25; transform: rotate(-4deg); }
-.stageBoard { position: absolute; inset: 2.2rem .6rem 1rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: .38rem; padding: .75rem; border: 1px solid rgba(97, 113, 240, .25); border-radius: 1.1rem; background: rgba(255,255,255,.38); box-shadow: 0 28px 40px -26px rgba(53,68,120,.55); transform: skewY(-8deg) rotate(-8deg); }
-.stageBoard span { border-radius: .45rem; background: rgba(124, 140, 255, .2); border: 1px solid rgba(124, 140, 255, .16); }
-.stageBoard span:nth-child(3n) { background: rgba(93, 226, 198, .28); }.stageBoard span:nth-child(5n) { background: rgba(255, 184, 107, .3); }
-.stageLabel { position: absolute; top: 0; left: 1rem; z-index: 4; display: flex; align-items: center; gap: .45rem; padding: .38rem .65rem; border: 1px solid rgba(255,255,255,.75); border-radius: var(--ui-radius-pill); background: rgba(255,255,255,.86); color: var(--ui-primary-d); font: 800 var(--ui-fs-micro) var(--ui-font-num); letter-spacing: .08em; box-shadow: 0 8px 20px -12px rgba(53,68,120,.55); }
-.stageLabel b { color: var(--ui-muted); font-weight: 700; }
-.stagePlayer { position: absolute; z-index: 5; left: 46%; top: 43%; width: 2.8rem; height: 2.8rem; border-radius: .65rem; background: var(--ui-primary); box-shadow: .55rem .55rem 0 rgba(97,113,240,.28), 0 18px 24px -16px rgba(53,68,120,.8); transform: rotate(45deg); animation: stage-step 2.8s ease-in-out infinite; }
-.stageBomb { position: absolute; z-index: 5; right: 22%; bottom: 24%; width: 1.65rem; height: 1.65rem; border-radius: 50%; background: var(--ui-ink); box-shadow: 0 0 0 .35rem rgba(30,42,58,.1); animation: bomb-pulse 1.4s ease-in-out infinite; }
-.stageBomb::after { content: ""; position: absolute; width: .5rem; height: .5rem; right: -.25rem; top: -.25rem; border-radius: 50%; background: var(--ui-amber); }
-.stageSpark { position: absolute; z-index: 5; left: 29%; top: 30%; color: var(--ui-amber); font-size: 1.8rem; animation: spark-pop 1.8s ease-in-out infinite; }
-.stageHud { position: absolute; z-index: 5; right: 0; bottom: 0; display: flex; align-items: baseline; gap: .4rem; padding: .45rem .7rem; border-radius: .75rem; background: var(--ui-title); color: white; box-shadow: 0 12px 24px -14px rgba(36,48,86,.8); }.stageHud strong { font: 800 1.15rem var(--ui-font-num); color: var(--ui-mint); }.stageHud span { font-size: var(--ui-fs-micro); opacity: .78; }
-@keyframes stage-step { 0%, 100% { transform: translate(0, 0) rotate(45deg); } 50% { transform: translate(1.2rem, -.65rem) rotate(45deg); } }
-@keyframes bomb-pulse { 0%, 100% { transform: scale(.92); opacity: .8; } 50% { transform: scale(1.08); opacity: 1; } }
-@keyframes spark-pop { 0%, 100% { opacity: .2; transform: scale(.7) rotate(0); } 45% { opacity: 1; transform: scale(1.08) rotate(18deg); } }
-.heroOrbit { position: absolute; width: 12rem; height: 7rem; border: 1px solid rgba(124, 140, 255, .28); border-radius: 50%; transform: rotate(-24deg); }
 .heroShard { --lm-float-angle: 45deg; position: absolute; border-radius: 0.8rem; transform: rotate(45deg); box-shadow: 0 18px 28px -18px rgba(36, 48, 86, .45); animation: lm-float var(--ui-motion-float) ease-in-out infinite; }
 .heroShardOne { width: 3.3rem; height: 3.3rem; top: 15%; right: 22%; background: var(--ui-primary); opacity: .64; animation-delay: var(--ui-motion-delay-copy); }
 .heroShardTwo { width: 2.4rem; height: 2.4rem; top: 48%; right: 8%; background: var(--ui-mint); opacity: .72; animation-duration: var(--ui-motion-float-mid); animation-delay: calc(var(--ui-motion-delay-copy) * 2); }
@@ -75,6 +89,9 @@
 .heroShardFour { width: 1.35rem; height: 1.35rem; bottom: 28%; right: 3%; background: var(--ui-rose); opacity: .72; animation-duration: var(--ui-motion-float-long); animation-delay: calc(var(--ui-motion-delay-copy) * 4); }
 
 .section {
+  width: min(100% - 2 * var(--ui-sp-6), var(--ui-max));
+  margin: 0 auto;
+  padding: var(--ui-sp-6) 0 var(--ui-sp-8);
   display: flex;
   flex-direction: column;
   gap: var(--ui-sp-5);
@@ -93,6 +110,10 @@
   gap: var(--ui-sp-2);
 }
 
+.sectionHeading h2 { margin: 0; font-size: var(--ui-fs-h1); }
+
+.section :global(.ui-grid) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
 .statusRail { display: flex; align-items: center; gap: var(--ui-sp-3); color: var(--ui-text-2); font-size: var(--ui-fs-cap); }
 .statusRail strong { color: var(--ui-title); font-family: var(--ui-font-num); font-size: var(--ui-fs-cap); }
 .onlineDot, :global(.ui-online-dot) { display: inline-block; width: .55rem; height: .55rem; border-radius: .2rem; background: var(--ui-up); animation: lm-online-pulse var(--ui-motion-pulse) ease-in-out infinite; }
@@ -109,33 +130,40 @@
 .coverMarker { --lm-float-angle: 45deg; position: absolute; width: .7rem; height: .7rem; right: 31%; bottom: 20%; border-radius: .2rem; background: white; opacity: .75; transform: rotate(45deg); animation: lm-float var(--ui-motion-float-marker) ease-in-out infinite reverse; }
 .onlinePill { position: absolute; right: var(--ui-sp-3); bottom: var(--ui-sp-3); display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .55rem; border-radius: var(--ui-radius-pill); background: rgba(255,255,255,.92); color: var(--ui-up); font: 700 var(--ui-fs-micro) var(--ui-font-num); }
 .page :global(.ui-cover) > :global(.ui-pill--soon) { position: absolute; right: var(--ui-sp-3); bottom: var(--ui-sp-3); }
-.cardTitle { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-sp-2); }.cardTitle h3 { margin: 0; }.roomRow { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-sp-2); }.metaRow { display: flex; gap: var(--ui-sp-3); }.shareButton { align-self: flex-start; }
+.cardTitle { display: flex; align-items: center; gap: var(--ui-sp-2); }.cardTitle h3 { margin: 0; }.metaRow { display: flex; gap: var(--ui-sp-2); flex-wrap: wrap; }.roomPanel { display: flex; align-items: center; gap: var(--ui-sp-2); padding: .625rem .75rem; border: 1px solid var(--ui-line); border-radius: .75rem; background: var(--ui-field); }.roomPanel strong { color: var(--ui-title); }.avatarStack { display: flex; align-items: center; }.avatarStack i, .avatarStack b { width: 1.7rem; height: 1.7rem; margin-left: -.25rem; display: grid; place-items: center; border: 2px solid #fff; border-radius: 50%; background: var(--ui-bg-2); color: var(--ui-primary-d); font: 700 var(--ui-fs-micro) var(--ui-font-num); }.avatarStack i:first-child { margin-left: 0; background: #f4d5ca; }.avatarStack i:nth-child(2) { background: #b9e7dc; }.avatarStack i:nth-child(3) { background: #ffd9a8; }.avatarStack i:nth-child(4) { background: #cfd5ff; }.avatarStack b { background: var(--ui-primary); color: #fff; }.cardActions { display: flex; gap: .625rem; margin-top: auto; padding-top: .625rem; }.cardActions .ui-btn:first-child { flex: 1; }.shareButton { align-self: flex-start; }
 .page :global(.ui-card--game:hover), .page :global(.ui-card--game:focus-within) { transform: translateY(-4px); }
+.page :global(.ui-card--game) { min-width: 0; }
 .page :global(.ui-card--game:hover) .coverScene, .page :global(.ui-card--game:focus-within) .coverScene { transform: translateX(5px); transition: transform var(--ui-motion-hover) var(--ui-ease); }
 .cardMint :global(.ui-cover) { filter: saturate(.82); }.cardRose :global(.ui-cover) { filter: saturate(.88); }
 
 @media (max-width: 640px) {
-  .page { gap: var(--ui-sp-7); }
+  .page { gap: 0; margin-top: calc(-1 * var(--ui-sp-5)); }
   .hero {
-    min-height: 34rem;
-    grid-template-columns: 1fr;
-    padding: var(--ui-sp-5) var(--ui-sp-4);
-    align-items: start;
+    min-height: 24rem;
     min-width: 0;
   }
+  .heroInner { width: min(100% - 2 * var(--ui-sp-4), var(--ui-max)); min-height: 24rem; padding: var(--ui-sp-5) 0; flex-direction: column; gap: var(--ui-sp-3); }
+  .heroLogo { width: 4.5rem; height: 4.5rem; border-radius: 1.2rem; }
+  .heroLogo > span { grid-template-columns: repeat(3, .625rem); grid-template-rows: repeat(3, .625rem); gap: .2rem; }
+  .heroCopy { padding-top: 0; }
   .hero :global(.ui-hero) { max-width: 11ch; font-size: 2.1rem; }
-  .heroLead { width: 100%; max-width: 18rem; font-size: 1rem; line-height: 1.55; word-break: break-all; }
-  .hero :global(.ui-actions) { width: min(100%, 18rem); flex-direction: column; align-items: stretch; }
+  .hero :global(.ui-actions) { width: min(100%, 19rem); flex-direction: column; align-items: stretch; }
   .hero :global(.ui-actions) :global(.ui-btn) { width: 100%; }
-  .heroArt { position: absolute; right: 50%; bottom: -.5rem; width: 15rem; height: 11rem; min-height: 0; opacity: .58; pointer-events: none; transform: translateX(50%) scale(.62); transform-origin: bottom center; }
-  .heroShardThree, .heroShardFour { display: none; }
-  .heroCopy { max-width: none; }
+  .heroArt { opacity: .52; }
+  .heroShardOne { top: auto; right: 23%; bottom: 14%; }
+  .heroShardTwo { top: auto; right: 8%; bottom: 22%; }
+  .heroShardThree { bottom: 7%; right: 42%; }
+  .heroShardFour { bottom: 18%; right: 4%; }
   .statusRail { width: 100%; justify-content: flex-start; }
   .sectionHeading { align-items: flex-start; flex-direction: column; }
-  .section :global(.ui-grid) { grid-template-columns: 1fr; gap: var(--ui-sp-4); }
-  .roomRow { align-items: stretch; flex-direction: column; }
-  .roomRow :global(.ui-btn) { width: 100%; }
-  .shareButton { width: 100%; }
+  .section { width: min(100% - 2 * var(--ui-sp-4), var(--ui-max)); }
+  .section :global(.ui-grid) { min-width: 0; grid-template-columns: minmax(0, 1fr); gap: var(--ui-sp-4); }
+  .cardTitle h3 { min-width: 0; overflow-wrap: anywhere; }
+  .cardActions :global(.ui-btn) { min-width: 0; }
+}
+
+@media (min-width: 641px) and (max-width: 960px) {
+  .section :global(.ui-grid) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 380px) {
