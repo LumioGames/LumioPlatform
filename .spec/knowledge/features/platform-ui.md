@@ -64,6 +64,10 @@ metadata:
 
 P0-1 搭 `web/` 脚手架时必须保留 `web/src/styles/` 与 `web/design-preview.html`；`main.tsx` 全局引入 `src/styles/index.css`。后续 SPA 页对照原型，不对照组件墙。
 
+### 大厅动效
+
+大厅首页采用“场景化大厅 + 在线状态轨道”：Hero 使用分层体素块和网格背景，游戏封面使用 CSS 几何微场景，卡片入场按 80ms 错峰，在线状态使用低频方点脉冲。共享时序令牌位于 `web/src/styles/tokens.css`，关键帧位于 `web/src/styles/deco.css`；动效只改变 `transform`、`opacity` 和 `box-shadow`，并遵守 `prefers-reduced-motion`。详细屏幕规格见 [`docs/specs/2026-09-05-lobby-motion-design.md`](../../../docs/specs/2026-09-05-lobby-motion-design.md)。
+
 ## 待解决
 
 - 12 张默认头像资产（P2-2 占位 SVG）；活样张里的 emoji 只是占位，不进生产。
